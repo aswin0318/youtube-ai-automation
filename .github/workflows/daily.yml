@@ -1,0 +1,29 @@
+name: Mind-il AI Malayalam Short
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 10 * * *' # 16:00 IST
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install renderer and Malayalam language tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg espeak-ng fonts-noto-core
+          python -m pip install -r requirements.txt
+      - name: Build preview
+        run: python scripts/make_short.py
+      - name: Save reviewable MP4
+        uses: actions/upload-artifact@v4
+        with:
+          name: mind-il-ai-preview
+          path: output/
+          retention-days: 7
