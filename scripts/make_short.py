@@ -1,11 +1,15 @@
 """Mind-il AI: a self-contained, reviewable English motion-graphics short."""
-import json, math, subprocess, tempfile, wave
+import json, math, subprocess, tempfile, wave, re
+import numpy as np
+import soundfile as sf
+from kokoro_onnx import Kokoro
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT=Path(__file__).resolve().parents[1]; OUT=ROOT/'output'; OUT.mkdir(exist_ok=True)
-MODEL=ROOT/'voices/en_US-lessac-medium.onnx'
-W,H,FPS=540,960,24
+MODEL=ROOT/'voices/kokoro-v1.0.onnx'
+VOICES=ROOT/'voices/voices-v1.0.bin'
+W,H,FPS=540,960,30
 FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 REG='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
 CYAN=(68,239,205); YELLOW=(255,213,94); WHITE=(246,249,255); MUTED=(148,174,195); PURPLE=(171,132,255)
@@ -16,7 +20,7 @@ SCENES=[
  ('TOOLS +\nFEEDBACK', 'Then it can use tools, check the results, and try again.', 'loop'),
  ('REAL-WORLD\nEXAMPLE', 'For example, it could research a trip and build an itinerary.', 'trip'),
  ('ONE BIG\nCATCH', 'But it can still make mistakes. Never blindly trust its decisions.', 'warning'),
- ('YOU STAY\nIN CONTROL', 'Review important actions yourself. Follow Mind il AI for more.', 'control'),
+ ('YOUR MOVE', 'So keep a human in control. What would you automate first?', 'control'),
 ]
 
 def font(n,bold=True): return ImageFont.truetype(FONT if bold else REG,n)
@@ -49,18 +53,23 @@ def icon(d,kind,x,y,scale=1):
   d.polygon([(x,y-45*s),(x+48*s,y+36*s),(x-48*s,y+36*s)],fill=YELLOW); d.line((x,y-22*s,x,y+7*s),fill=(17,22,35),width=lw+2);d.ellipse((x-3*s,y+18*s,x+3*s,y+24*s),fill=(17,22,35))
 
 def base(t,idx,duration):
- im=BG.copy(); d=ImageDraw.Draw(im)
+ # Alternate contrasting editorial palettes, while retaining readable white type.
+ palettes=[(14,18,36),(32,21,46),(10,39,45),(43,24,35),(22,32,56),(48,24,20),(14,39,39)]
+ im=Image.blend(BG,Image.new('RGB',(W,H),palettes[idx]),0.52); d=ImageDraw.Draw(im)
  for k in range(13):
   x=(k*137+70)%W; y=(k*211+int(t*(9+k%4*4))+idx*71)%H; r=1+k%2
   d.ellipse((x-r,y-r,x+r,y+r),fill=(42,98,112))
  pill(d,(26,26,514,72),(16,34,51),r=15)
- d.text((42,37),'MIND-IL AI',font=font(18),fill=CYAN)
+ d.text((42,37),'AI EXPLAINED',font=font(18),fill=CYAN)
  text_center(d,(458,38),f'{idx+1:02d} / 07',font(15),MUTED)
  pill(d,(30,916,510,922),(34,56,72),r=3)
  pill(d,(30,916,30+int(480*(idx+min(1,t/duration))/len(SCENES)),922),CYAN,r=3)
  return im,d
 
 def frame(headline,kind,t,duration,idx):
+ global CYAN, YELLOW
+ CYAN=[(115,226,255),(255,160,174),(128,239,190),(194,165,255),(255,199,113),(255,165,129),(119,237,206)][idx]
+ YELLOW=[(255,218,139),(252,205,159),(245,220,136),(250,206,183),(255,228,154),(255,205,122),(251,215,131)][idx]
  im,d=base(t,idx,duration); enter=ease(t/.45); shift=int((1-enter)*50)
  d.text((36,106+shift), 'AI EXPLAINED  /  '+('WATCH THIS' if idx==0 else 'IN 30 SECONDS'),font=font(16),fill=CYAN)
  hf=font(53 if len(max(headline.split('\n'),key=len))<13 else 45)
@@ -106,23 +115,31 @@ def frame(headline,kind,t,duration,idx):
   pill(d,(110,605,430,657),(22,78,78),r=16);text_center(d,(270,620),'HUMAN IN CONTROL',font(17),WHITE)
  # Kinetic, short captions are approximately timed, not forced-aligned.
  words=SCENES[idx][1].split(); groups=[words[i:i+4] for i in range(0,len(words),4)]
- active=min(len(groups)-1,int((t/max(duration-.28,.1))*len(groups)))
+ active=min(len(groups)-1,int((t/max(duration-.45,.1))*len(groups)))
  phrase=' '.join(groups[active]).upper();f=font(25)
  while d.textbbox((0,0),phrase,font=f)[2]>452: f=font(f.size-1)
  pill(d,(31,755,509,835),(21,41,59),outline=(42,74,91),r=21)
  text_center(d,(270,780),phrase,f,YELLOW if idx in (0,5) else WHITE)
- text_center(d,(270,863),'FOLLOW FOR MORE AI, MADE SIMPLE',font(15),MUTED)
+ text_center(d,(270,863),'THE FUTURE IS YOURS TO QUESTION',font(15),MUTED)
  return im
 
 def main():
- if not MODEL.exists(): raise RuntimeError('English voice model missing')
+ if not MODEL.exists() or not VOICES.exists(): raise RuntimeError('Kokoro voice files missing')
+ voice=Kokoro(str(MODEL),str(VOICES))
  with tempfile.TemporaryDirectory() as td:
   temp=Path(td); parts=[]
   for i,(headline,narration,kind) in enumerate(SCENES):
    wav=temp/f'{i}.wav';mp4=temp/f'{i}.mp4'
-   subprocess.run(['python','-m','piper','--model',str(MODEL),'--output_file',str(wav)],input=narration.encode(),check=True)
+   # Each complete thought gets its own breath, with real silence between thoughts.
+   chunks=re.split(r'(?<=[.!?])\s+',narration)
+   audio=[]
+   for j,chunk in enumerate(chunks):
+    samples,rate=voice.create(chunk,voice='af_heart',speed=0.94,lang='en-us')
+    audio.append(samples)
+    if j<len(chunks)-1: audio.append(np.zeros(int(rate*(0.75 if i==len(SCENES)-1 else 0.38)),dtype=np.float32))
+   sf.write(str(wav),np.concatenate(audio),rate)
    with wave.open(str(wav)) as wf: seconds=wf.getnframes()/wf.getframerate()
-   duration=seconds+.2;count=math.ceil(duration*FPS)
+   duration=seconds+.45;count=math.ceil(duration*FPS)
    cmd=['ffmpeg','-hide_banner','-loglevel','error','-y','-f','rawvideo','-pix_fmt','rgb24','-s',f'{W}x{H}','-r',str(FPS),'-i','pipe:0','-i',str(wav),'-t',str(duration),'-c:v','libx264','-preset','veryfast','-crf','22','-pix_fmt','yuv420p','-c:a','aac','-b:a','128k',str(mp4)]
    proc=subprocess.Popen(cmd,stdin=subprocess.PIPE)
    try:
