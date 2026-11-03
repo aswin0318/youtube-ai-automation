@@ -1,5 +1,6 @@
 name: Mind-il AI Malayalam Short
 on:
+  pull_request:
   workflow_dispatch:
   schedule:
     - cron: '30 10 * * *' # 16:00 IST
