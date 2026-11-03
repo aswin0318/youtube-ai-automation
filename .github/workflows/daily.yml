@@ -1,4 +1,4 @@
-name: Mind-il AI Malayalam Short
+name: Mind-il AI English Short
 on:
   pull_request:
   workflow_dispatch:
@@ -15,16 +15,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install renderer and Malayalam language tools
+      - name: Install free rendering tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg espeak-ng fonts-noto-core
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
           python -m pip install -r requirements.txt
+      - name: Download English voice
+        run: |
+          mkdir -p voices
+          base=https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium
+          curl -fL --retry 3 "$base/en_US-lessac-medium.onnx" -o voices/en_US-lessac-medium.onnx
+          curl -fL --retry 3 "$base/en_US-lessac-medium.onnx.json" -o voices/en_US-lessac-medium.onnx.json
       - name: Build preview
         run: python scripts/make_short.py
       - name: Save reviewable MP4
         uses: actions/upload-artifact@v4
         with:
-          name: mind-il-ai-preview
+          name: mind-il-ai-english-preview
           path: output/
           retention-days: 7
