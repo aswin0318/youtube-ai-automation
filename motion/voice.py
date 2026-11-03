@@ -12,7 +12,7 @@ scenes=[
  ('It can use tools, check what happened, and try again.', 'USE. CHECK.\nIMPROVE.', 'loop'),
  ('Imagine asking it to plan your trip. It could research places and build your itinerary.', 'FROM IDEA\nTO ITINERARY', 'trip'),
  ('But here is the catch. AI can make mistakes, so keep a human in control.', 'THE HUMAN\nSTAYS IN CHARGE.', 'warning'),
- ('Imagine getting an hour back every day. What would you create with it?', 'WHAT WOULD YOU\nCREATE?', 'end'),
+ ('AI agents can act for you, but they need your judgment. What task would you trust one to do?', 'WHAT WOULD YOU\nTRUST IT TO DO?', 'end'),
 ]
 import re
 out=Path('motion/public');out.mkdir(parents=True,exist_ok=True);metadata=[]
