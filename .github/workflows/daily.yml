@@ -1,9 +1,9 @@
-name: Mind-il AI English Short
+name: AI English Preview
 on:
   pull_request:
   workflow_dispatch:
   schedule:
-    - cron: '30 10 * * *' # 16:00 IST
+    - cron: '30 10 * * *'
 permissions:
   contents: read
 jobs:
@@ -15,22 +15,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install free rendering tools
+      - name: Install rendering and voice tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-dejavu-core
+          sudo apt-get install -y ffmpeg fonts-dejavu-core espeak-ng
           python -m pip install -r requirements.txt
-      - name: Download English voice
+      - name: Download open voice model
         run: |
           mkdir -p voices
-          base=https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/lessac/medium
-          curl -fL --retry 3 "$base/en_US-lessac-medium.onnx" -o voices/en_US-lessac-medium.onnx
-          curl -fL --retry 3 "$base/en_US-lessac-medium.onnx.json" -o voices/en_US-lessac-medium.onnx.json
+          base=https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1
+          curl -fL --retry 3 "$base/kokoro-v1.0.onnx" -o voices/kokoro-v1.0.onnx
+          curl -fL --retry 3 "$base/voices-v1.0.bin" -o voices/voices-v1.0.bin
       - name: Build preview
         run: python scripts/make_short.py
       - name: Save reviewable MP4
         uses: actions/upload-artifact@v4
         with:
-          name: mind-il-ai-english-preview
+          name: english-animated-preview
           path: output/
           retention-days: 7
