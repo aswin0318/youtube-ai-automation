@@ -112,3 +112,7 @@ These are candidates, not endorsements or installed integrations. Inspect source
 - Copilot dynamic workflows (public preview at announcement): https://github.blog/changelog/2026-10-01-dynamic-workflows-in-copilot-cli-and-the-copilot-app/
 - Project HydraFusion (experimental at announcement): https://github.blog/changelog/2026-09-10-github-copilot-weekly-releases-september-7/
 - AI Engineer source reference: https://ai.engineer/talks/BInpv7lGp1o-your-agent-didnt-fail-your-harness-did
+
+## Initial local voice feasibility check
+
+On the local execution environment, Kokoro generated “What task would you trust an AI agent to do?” with af_heart (2.79 seconds of audio in 1.00 second) and af_bella (2.82 seconds in 1.03 seconds). These are single-run timings from this environment, not GitHub Actions benchmarks. Neither sample was evaluated by listening and this does not establish voice quality. The existing af_heart remains the default. No other voice engines were benchmarked.
