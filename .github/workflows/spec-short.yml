@@ -1,4 +1,4 @@
-name: Spec Kit cartoon v2 production
+name: SDD episode 1 production
 on:
   workflow_dispatch:
   pull_request:
