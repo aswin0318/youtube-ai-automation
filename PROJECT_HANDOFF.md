@@ -1,32 +1,32 @@
-# The AI Side — project handoff
+# The AI Side — production memory
 
-Updated: 4 November 2026.
+Updated 5 November 2026. This file supersedes older project handoffs.
 
-## Goal and constraints
+## Channel and approved workflow
 
-Build an attractive, English-language AI-explainer Shorts workflow for the user's channel, currently called Mind-il AI; preferred proposed name: **The AI Side**. Name/handle availability has not been verified and the YouTube channel has not been renamed. User is on a phone, wants free tools and no paid services. Do not publish or upload to YouTube until the user explicitly authorizes it.
+Channel: https://www.youtube.com/@TheAISide-01. English-language YouTube Shorts, made with free tools. The first agent-harness video was published by explicit user instruction. Daily noon topic/script review and 7 pm publication tasks exist; the user must approve each day's script, and the task must verify the render and channel before publication. Do not upload rejected versions. A 7 pm task starts at that time; actual publication must be confirmed.
 
-## Current state
+## Current episode and series
 
-Repository: aswin0318/youtube-ai-automation. The latest accepted preview is on branch `english-motion-preview`, commit `24f3054d80cdb643766cb07970d7b184d3f5f13f`, pull request #2. The changes are not merged into the default branch; the old workflow remains there. The workflow produces reviewable artifacts, not published videos. The latest successful run: https://github.com/aswin0318/youtube-ai-automation/actions/runs/41721938863 ; artifact `ai-side-motion-preview`, expires after 7 days. To regenerate, run a branch workflow. This prototype has one fixed, manually written AI agents topic; it does not autonomously research trends, generate new scripts or publish.
+Episode 1 introduces spec-driven development with the user-approved cartoon story: an AI creates an appointment feature; two patients book one slot; a spec states behavior and rules; acceptance criteria make the expected outcome testable; a technical plan, implementation and tests follow; humans review; the closing teases GitHub Spec Kit. Episode 2: Spec Kit. Episode 3: Kiro. Branch appointment-cartoon-approved, PR #11. The approved script is in motion/spec_voice.py.
 
-## Feedback and creative decisions
+## Creative and quality requirements
 
-- The first Malayalam/eSpeak video was rejected; switch to English.
-- The user likes the Kokoro `af_heart` English voice and the latest Remotion visual design.
-- They dislike repetitive slide/page designs, abrupt cuts, blinking, page numbers and generic calls to follow.
-- The latest version overlaps the scenes, removes page numbers and the progress bar, and uses deliberate pauses. User says this version is good, but asks for **more animation, smoother motion and more seamless continuity** in the next iteration.
-- Endings must be specific to the topic, impactful and expressive, with a pause before the question. Current closing: “AI agents can act for you, but they need your judgment.” [pause] “What task would you trust one to do?”
-- Use varied, purposeful visuals responding to narration. Focus on a strong hook, readable captions, storytelling and viewer retention; do not promise engagement or claim quality has been verified without actually reviewing the video.
-- Previous requests: find suitable high-quality skills/tools and use them. Continue reviewing and respecting licenses, free-use constraints and reproducibility.
+- More than 90 seconds and at most 120 seconds; 1080×1920 vertical, 30 fps.
+- Original work only. Explain accurately and simply, with light humor, expressive English voice and intentional pauses.
+- Continuous cartoon action that literally illustrates the spoken story. Avoid tiny generic cards, page turns, scene blinking, page numbers, empty shots and meaningless movement.
+- Characters must stay grounded; keep faces, bodies, labels, captions and controls separated. Reserve generous mobile-safe margins and test intermediate transition frames.
+- Review as a viewer: script-to-shot match, visual causality, motion readability, timing, captions, complete frame alignment and audio. Record what was actually inspected. Never claim an end-to-end playback or listening review without performing it.
+- User specifically rejected earlier house analogy and videos. Current decisions supersede earlier generic follow/punchline endings.
 
-## Implementation and tools
+## Motion references to use
 
-- Frame-based Remotion/React visuals, 1080×1920 and 30 fps. Main composition: `motion/src/index.jsx`; narration/timing: `motion/voice.py`; workflow: `.github/workflows/daily.yml`.
-- Local Kokoro ONNX voice, `af_heart`, with sentence-based timing and inserted silence. Open model files download at workflow time. Free FFmpeg, Python and GitHub Actions.
-- An adapted personal **remotion-video-production** skill was installed and used. It derives from `remotion-dev/skills` Remotion best practices and contains references for compositions, multi-scene video, timing, transitions, sequencing and layout. The full upstream Remotion skill repository was inspected; use the adapted skill as guidance and consult upstream documentation if needed.
-- `CREATIVE_BRIEF.md` records the editorial brief. This is guidance, not an automatically executed LLM prompt.
+- Remotion official Agent Skills: https://github.com/remotion-dev/skills — frame-based composition, sequencing, caption/audio and rendering. Installed adapted remotion-video-production skill supplements the official material.
+- Motion Graphics Skills: https://github.com/charlie947/motion-graphics-skills — brief, explainer, motion effects and visual storytelling. Follow applicable ideas without copying others' designs.
+- Emil Kowalski Animation Skills: https://github.com/emilkowalski/skills — purposeful motion, easing, choreography and review. UI interaction timings are guidelines, not a substitute for narration-led film pacing.
+- Captions currently use sentence cues with approximate phrase timing, not forced word alignment.
+- Kokoro ONNX voice af_heart via motion/spec_voice.py; composition motion/src/SpecShort.jsx; workflow .github/workflows/spec-short.yml.
 
-## Next session
+## Quality gate
 
-Begin with the current accepted preview and user feedback. Improve continuity with persistent scene elements, motivated movement, smooth transitions and visuals that illustrate each spoken beat; keep the current voice and retain pauses. Preserve the relevant ending. Render and review representative frames/actual playback where possible, verify generated audio and video, and give the user a new downloadable preview. Do not assume the test branch is already merged or that YouTube publishing is enabled.
+Render the exact branch revision, verify 90 < duration ≤ 120 seconds, inspect scene starts, middles, ends and transition frames for overlaps and matching actions, listen to narration if an audio-review capability is available, and check viewer comprehension. Be candid about unresolved limits. Never publish merely because encoding succeeds.
