@@ -37,9 +37,11 @@ jobs:
       - name: Render representative scene frames
         run: |
           mkdir -p output/layout-frames
-          frames=$(python -c "import json; s=json.load(open('motion/src/harness-scenes.json')); print(','.join(str(x['start']+x['duration']//2) for x in s))")
+          frames=$(python -c "import json; s=json.load(open('motion/src/harness-scenes.json')); print(' '.join(str(x['start']+x['duration']//2) for x in s))")
           cd motion
-          npx remotion render src/harness-redesign.jsx HarnessExplainer ../output/layout-frames --frames="$frames" --image-format=png --concurrency=2
+          for frame in $frames; do
+            npx remotion still src/harness-redesign.jsx HarnessExplainer "../output/layout-frames/$(printf '%06d' "$frame").png" --frame="$frame"
+          done
       - name: Create visual contact sheet
         run: |
           python - <<'PY'
