@@ -6,13 +6,13 @@ import soundfile as sf
 from kokoro_onnx import Kokoro
 
 SCENES = [
-('request','THE PROMPT', "You ask an AI coding agent: build me a workout tracker. It produces a great-looking app. You log a workout, tap save, then refresh. Your workout is gone. The AI built a screen, but nobody defined what saving should mean."),
-('spec','THE SPEC', "This is where spec-driven development comes in. Before building, you describe the behavior you need. That description is called a specification, or spec. It explains who the feature is for, what it should do, and its important constraints."),
-('criteria','ACCEPTANCE CRITERIA', "For our tracker, the spec says: a user logs exercises and sets. After saving and reopening the app, the workout must still be there. These are acceptance criteria: specific outcomes we can check."),
-('plan','THE PLAN', "Next comes the technical plan. For example: a workout screen, an API to receive the data, and a database to store it. The spec describes the expected behavior; the plan explains a way to deliver it."),
-('tasks','TASKS AND CODE', "Break the plan into tasks: create the form, implement the save endpoint, and store the workout. An AI agent can work on each task with the spec and plan as shared context."),
-('verify','VERIFY', "Now test the result. Save a workout, reopen the app, and check it is still there. If it fails, fix it and test again. People still need to review the spec and code. A spec doesn't guarantee a correct app."),
-('ending','NEXT: SPEC KIT', "That's spec-driven development: define behavior, plan, build, and verify. In the next video, we'll explore GitHub Spec Kit, a tool that helps teams follow this process.")
+('prompt','THE REQUEST', "You ask your AI coding agent: build an appointment-booking feature. A minute later, it proudly says: Done!"),
+('problem','THE PROBLEM', "The screen looks great. But two people book the same time slot. And the app happily says: Confirmed! to both. Congratulations. You just invented a waiting room boss fight."),
+('spec','THE SPEC', "This is where spec-driven development comes in. Before the agent starts coding, you describe what the feature must do, the rules it must follow, and how you'll know it works. That description is called a specification, or a spec."),
+('example','THE RULE', "For our booking feature, the spec might say: a patient can book an available slot. Once booked, that slot can't be booked again. And here's an edge case: what if two requests arrive at almost the same time?"),
+('criteria','ACCEPTANCE CRITERIA', "Then we write acceptance criteria: checks that define success. For example: if two patients try to book the same slot, only one booking succeeds, and the other gets a clear message."),
+('plan','PLAN AND VERIFY', "Next comes the technical plan: maybe an API for bookings, a database to store them, and a way to prevent conflicting writes. The agent can then break that plan into tasks, write code, and run tests against the spec. And yes, humans still review the requirements and the code."),
+('ending','NEXT EPISODE', "So, spec-driven development helps turn a vague request into a shared, testable description that guides the work. In the next video, we'll explore GitHub Spec Kit, a tool that helps put this process into practice.")
 ]
 
 out=Path('motion/public/spec-short');out.mkdir(parents=True,exist_ok=True)
@@ -22,7 +22,7 @@ for idx,(kind,title,narration) in enumerate(SCENES):
  chunks=re.split(r'(?<=[.!?])\s+', narration)
  audio=[]; cues=[]; cursor=0
  for j,chunk in enumerate(chunks):
-  samples,rate=voice.create(chunk,voice='af_heart',speed=1.00 if kind!='ending' else .96,lang='en-us')
+  samples,rate=voice.create(chunk,voice='af_heart',speed=1.02 if kind!='ending' else .98,lang='en-us')
   if len(samples)==0: raise RuntimeError('Empty voice segment')
   cues.append({'text':chunk,'start':cursor,'end':cursor+len(samples)/rate});audio.append(samples);cursor+=len(samples)/rate
   if j<len(chunks)-1:
