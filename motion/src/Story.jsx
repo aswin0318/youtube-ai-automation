@@ -35,7 +35,7 @@ function Diagram({scene,frame}){const t=local(frame,scene)+.4, p=range(t,.5,3.7)
     <g opacity={scratch}><path d="M165 20 Q190 2 208 20 Q223 45 193 58 L185 68" fill="#fff7e7" stroke="#263248" strokeWidth="5"/><text x="185" y="47" fontSize="35" fontWeight="900" fill="#263248">?</text><path d="M22 83 Q10 92 20 105" fill="none" stroke="#77add8" strokeWidth="7"/></g>
    </g>
    <rect x="278" y="250" width="242" height="215" rx="24" fill="#fff8ea" stroke="#53667b" strokeWidth="6"/>
-   <text x="399" y="302" textAnchor="middle" fontWeight="800" fontSize="29" fill="#263248">PROJECT</text>
+   <text x="399" y="225" textAnchor="middle" fontWeight="800" fontSize="29" fill="#263248">PROJECT</text>
    <g opacity={1-range(throwP,.83,1)} transform={`translate(${paperX} ${paperY}) rotate(${throwP*38} 50 70) scale(${.55-.25*throwP})`}><IconFile/></g>
    <g><path d="M565 450H740L718 610H585Z" fill="#ed786e" stroke="#263248" strokeWidth="7"/><path d="M610 485V565 M690 485V565" stroke="#be554f" strokeWidth="8" strokeLinecap="round"/>
    <g transform={`rotate(${-38*lid} 565 445)`}><path d="M555 445H750" stroke="#263248" strokeWidth="17" strokeLinecap="round"/><path d="M630 420H682" stroke="#263248" strokeWidth="12" strokeLinecap="round"/></g></g>
