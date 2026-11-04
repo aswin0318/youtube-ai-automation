@@ -1,4 +1,4 @@
-name: SDD episode 1 production
+name: Appointment cartoon production
 on:
   workflow_dispatch:
   pull_request:
