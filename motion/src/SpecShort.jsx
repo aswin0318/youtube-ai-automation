@@ -11,8 +11,8 @@ const phase=(sc,t,i)=>rise(t,sc.cues[Math.min(i,sc.cues.length-1)].start,sc.cues
 function Cursor({x,y,t}) {let pulse=1+.11*Math.sin(t*7);return <g transform={`translate(${x} ${y}) scale(${pulse})`}><path d="M0 0 L2 67 L20 49 L34 78 L46 72 L31 43 L58 41Z" fill="#ffd06e" stroke="#1c2740" strokeWidth="4" strokeLinejoin="round"/></g>}
 function Device({scene,t}){
  const k=scene.kind, e=i=>phase(scene,t,i), bob=Math.sin(t*1.4)*3;
- let dx=k==='request'? 470-e(2)*95 : k==='verify'? 470-e(0)*95 : 470;
- let dy=k==='request'? 405-e(2)*65 : k==='verify'? 405-e(0)*65 : 405;
+ let dx=k==='request'? 600-e(2)*35 : k==='verify'? 600-e(0)*35 : 600;
+ let dy=k==='request'? 420-e(2)*10 : k==='verify'? 420-e(0)*10 : 420;
  let title=k==='request'?'WORKOUT TRACKER':k==='spec'?'DEFINE BEHAVIOR':k==='criteria'?'ACCEPTANCE TEST':k==='plan'?'TECHNICAL PLAN':k==='tasks'?'BUILD THE FEATURE':k==='verify'?'TEST THE RESULT':'COMING UP NEXT';
  return <g transform={`translate(0 ${bob})`}>
  <rect x="150" y="40" width="580" height="690" rx="44" fill="#fffdfa" stroke="#1c2740" strokeWidth="8"/>
