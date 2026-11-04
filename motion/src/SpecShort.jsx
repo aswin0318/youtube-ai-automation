@@ -2,49 +2,48 @@ import React from 'react';
 import {AbsoluteFill,Audio,Composition,Easing,interpolate,interpolateColors,registerRoot,staticFile,useCurrentFrame} from 'remotion';
 import scenes from './spec-scenes.json';
 const FPS=30,TOTAL=scenes.reduce((a,s)=>a+s.duration,0);
-const clamp={extrapolateLeft:'clamp',extrapolateRight:'clamp',easing:Easing.bezier(.22,1,.36,1)};
-const rise=(t,a,b)=>interpolate(t,[a,b],[0,1],clamp);
-const colors={ink:'#1c2740',coral:'#fa8072',purple:'#a38be9',mint:'#65cdb2',yellow:'#ffd06e'};
-const Box=({x,y,w,h,color,children})=><g><rect x={x} y={y} width={w} height={h} rx="16" fill={color}/>{children}</g>;
-const Label=({x,y,children,size=25,color=colors.ink})=><text x={x} y={y} fill={color} fontWeight="800" fontSize={size} textAnchor="middle">{children}</text>;
-const phase=(sc,t,i)=>rise(t,sc.cues[Math.min(i,sc.cues.length-1)].start,sc.cues[Math.min(i,sc.cues.length-1)].start+.6);
-function Cursor({x,y,t}) {let pulse=1+.11*Math.sin(t*7);return <g transform={`translate(${x} ${y}) scale(${pulse})`}><path d="M0 0 L2 67 L20 49 L34 78 L46 72 L31 43 L58 41Z" fill="#ffd06e" stroke="#1c2740" strokeWidth="4" strokeLinejoin="round"/></g>}
-function Device({scene,t}){
- const k=scene.kind, e=i=>phase(scene,t,i), bob=Math.sin(t*1.4)*3;
- let dx=k==='request'? 600-e(2)*35 : k==='verify'? 600-e(0)*35 : 600;
- let dy=k==='request'? 420-e(2)*10 : k==='verify'? 420-e(0)*10 : 420;
- let title=k==='request'?'WORKOUT TRACKER':k==='spec'?'DEFINE BEHAVIOR':k==='criteria'?'ACCEPTANCE TEST':k==='plan'?'TECHNICAL PLAN':k==='tasks'?'BUILD THE FEATURE':k==='verify'?'TEST THE RESULT':'COMING UP NEXT';
- return <g transform={`translate(0 ${bob})`}>
- <rect x="150" y="40" width="580" height="690" rx="44" fill="#fffdfa" stroke="#1c2740" strokeWidth="8"/>
- <rect x="150" y="40" width="580" height="92" rx="40" fill="#e4ddfb"/>
- <circle cx="200" cy="86" r="10" fill="#fa8072"/><circle cx="235" cy="86" r="10" fill="#ffd06e"/><circle cx="270" cy="86" r="10" fill="#65cdb2"/>
- <Label x={465} y={94} size={26}>{title}</Label>
- {(k==='request'||k==='verify')&&<g>
- <Label x={440} y={210} size={32}>TODAY'S WORKOUT</Label>
- <Box x={205} y={250} w={470} h={80} color="#eaf7f1"><Label x={440} y={301} size={27}>SQUATS · 3 SETS</Label></Box>
- <Box x={290} y={370} w={300} h={80} color="#a38be9"><Label x={440} y={421} color="#ffffff" size={29}>SAVE</Label></Box>
- <g opacity={e(2)}><rect x="195" y="490" width="490" height="120" rx="20" fill={k==='request'?'#fff0ec':'#e5f7ed'}/><Label x={440} y={542} size={26}>{k==='request'?'AFTER REFRESH':'AFTER REOPEN'}</Label><Label x={440} y={582} size={25} color={k==='request'?'#ba4a45':'#16785d'}>{k==='request'?'WORKOUT MISSING!':'WORKOUT STILL HERE ✓'}</Label></g>
- <Cursor x={dx} y={dy} t={t}/></g>}
- {k==='spec'&&<g>
- <Label x={440} y={207} size={31}>WHAT MUST THE APP DO?</Label>
- {['WHO: PEOPLE TRACKING WORKOUTS','BEHAVIOR: SAVE A SESSION','CONSTRAINT: KEEP THE DATA'].map((s,i)=><g key={s} transform={`translate(${(1-e(Math.min(i+1,scene.cues.length-1)))*80} 0)`} opacity={e(Math.min(i+1,scene.cues.length-1))}><Box x={190} y={250+i*110} w={500} h={78} color={[ '#e5f7ed','#f1e9ff','#fff0d4'][i]}><Label x={440} y={300+i*110} size={21}>{s}</Label></Box></g>)}
- </g>}
- {k==='criteria'&&<g>
- <Label x={440} y={210} size={30}>A RESULT WE CAN CHECK</Label>
- {['1. LOG EXERCISE + SETS','2. SAVE THE WORKOUT','3. REOPEN: IT IS STILL THERE'].map((s,i)=><g key={s} opacity={e(Math.min(i,scene.cues.length-1))}><circle cx="235" cy={285+i*112} r="19" fill="#65cdb2"/><path d={`M225 ${285+i*112} l7 7 l14 -16`} fill="none" stroke="#fff" strokeWidth="5"/><text x="275" y={294+i*112} fontSize="22" fontWeight="800" fill="#1c2740">{s}</text></g>)}
- <Cursor x={390+Math.sin(t*2)*14} y={600} t={t}/></g>}
- {k==='plan'&&<g><Label x={440} y={215} size={30}>HOW THE PARTS CONNECT</Label>
- <path d="M275 380 H605" stroke="#9b91d0" strokeWidth="9" strokeDasharray="13 11"/>
- {['SCREEN','API','DATABASE'].map((s,i)=><g key={s} opacity={e(Math.min(i,scene.cues.length-1))}><Box x={185+i*170} y={315} w={145} h={130} color={['#65cdb2','#a38be9','#ffd06e'][i]}><Label x={257+i*170} y={390} size={21}>{s}</Label></Box></g>)}
- <circle cx={275+((t*100)%330)} cy="380" r="11" fill="#1c2740"/><Label x={440} y={550} size={23}>SPEC = WHAT · PLAN = HOW</Label></g>}
- {k==='tasks'&&<g><Label x={440} y={210} size={30}>ONE TASK AT A TIME</Label>
- {['CREATE THE FORM','BUILD THE SAVE API','STORE THE WORKOUT'].map((s,i)=><g key={s} opacity={e(Math.min(i+1,scene.cues.length-1))}><Box x={205} y={255+i*110} w={470} h={80} color={['#e5f7ed','#f1e9ff','#fff0d4'][i]}><Label x={420} y={306+i*110} size={23}>{s}</Label></Box><circle cx="640" cy={295+i*110} r="15" fill="#65cdb2"/></g>)}
- <Cursor x={520+Math.sin(t*2)*18} y={580} t={t}/></g>}
- {k==='ending'&&<g><Label x={440} y={228} size={32}>SPEC-DRIVEN DEVELOPMENT</Label>
- {['DEFINE','PLAN','BUILD','VERIFY'].map((s,i)=><g key={s} opacity={rise(t,i*.5,i*.5+.5)}><Box x={190+i*127} y={285} w={110} h={95} color={['#65cdb2','#a38be9','#ffd06e','#fa8072'][i]}><Label x={245+i*127} y={342} size={18}>{s}</Label></Box></g>)}
- <g opacity={e(1)}><Box x={205} y={475} w={470} h={105} color="#e4ddfb"><Label x={440} y={538} size={29}>NEXT: GITHUB SPEC KIT</Label></Box></g></g>}
+const o={extrapolateLeft:'clamp',extrapolateRight:'clamp',easing:Easing.bezier(.22,1,.36,1)};
+const ease=(v,a,b)=>interpolate(v,[a,b],[0,1],o);
+const C={ink:'#202842',mint:'#57bfa3',purple:'#8e7bd5',gold:'#ffc56c',red:'#ef7b73',cream:'#fffaf0',light:'#ebf2f4'};
+const T=({x,y,children,size=26,fill=C.ink,weight=800,anchor='middle'})=><text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={weight} fill={fill}>{children}</text>;
+const R=({x,y,w,h,fill=C.cream,stroke=C.ink,sw=5,rx=18})=><rect x={x} y={y} width={w} height={h} rx={rx} fill={fill} stroke={stroke} strokeWidth={sw}/>;
+function Person({x,y,s=1,t=0,color='#a996eb',skin='#eeb887',mood='smile',arm='down',walk=0}){
+ const swing=Math.sin(t*5)*walk*12,armY=arm==='point'?-32:arm==='raise'?-95:40;
+ return <g transform={`translate(${x} ${y}) scale(${s})`}>
+ <path d={`M-23 -68 L${-30+swing} -5 M23 -68 L${30-swing} -5`} stroke={C.ink} strokeWidth="14" strokeLinecap="round"/>
+ <path d="M-51 -158 Q0 -185 51 -158 L58 -68 H-58Z" fill={color} stroke={C.ink} strokeWidth="6"/>
+ <path d={`M-47 -150 Q-75 -130 -66 -106 M48 -151 Q75 ${-135+armY*.25} ${81} ${-140+armY}`} fill="none" stroke={C.ink} strokeWidth="13" strokeLinecap="round"/>
+ <circle cx="0" cy="-216" r="52" fill={skin} stroke={C.ink} strokeWidth="6"/>
+ <path d="M-52 -220 Q-50 -272 -2 -269 Q48 -270 52 -220 Q20 -244 -10 -238 Q-32 -237 -52 -220Z" fill="#42334a"/>
+ <circle cx="-19" cy="-216" r="4.5" fill={C.ink}/><circle cx="19" cy="-216" r="4.5" fill={C.ink}/>
+ <path d={mood==='sad'?'M-19 -190 Q0 -205 19 -190':mood==='surprise'?'M-4 -199 Q9 -202 7 -188 Q-4 -184 -4 -199':'M-19 -193 Q0 -178 19 -193'} fill="none" stroke={C.ink} strokeWidth="4.5" strokeLinecap="round"/>
  </g>
 }
-function Captions({cue,time}){if(!cue)return null;const words=cue.text.split(/\s+/),groups=[];for(let i=0;i<words.length;i+=5)groups.push(words.slice(i,i+5));let p=Math.max(0,Math.min(.999,(time-cue.start)/Math.max(.1,cue.end-cue.start)));let index=Math.min(groups.length-1,Math.floor(p*groups.length));return <div style={{position:'absolute',left:100,right:155,bottom:320,minHeight:145,display:'flex',justifyContent:'center',alignItems:'center'}}><div style={{padding:'20px 28px',borderRadius:24,background:'#1c2740',color:'#fff',fontWeight:800,fontSize:52,lineHeight:1.15,textAlign:'center',boxShadow:'0 8px 24px #1c274044'}}>{groups[index].map((w,i)=><span key={i} style={{marginRight:10,color:i===groups[index].length-1?'#ffd06e':'#fff'}}>{w}</span>)}</div></div>}
-function Main(){let f=useCurrentFrame(),s=scenes.find(z=>f>=z.start&&f<z.start+z.duration)||scenes[scenes.length-1],t=(f-s.start)/FPS,cue=s.cues.find(c=>t>=c.start&&t<c.end);let ix=scenes.indexOf(s),prev=ix>0?scenes[ix-1]:null,blend=prev?rise(f,s.start,s.start+15):1;let bg=interpolateColors(f,scenes.map(x=>x.start),['#fff1df','#edf5f0','#f4ebfa','#e9f2f9','#fff0df','#e9f7ef','#f4ebfa']);return <AbsoluteFill style={{background:bg,color:'#1c2740',fontFamily:'Arial, sans-serif',overflow:'hidden'}}><div style={{position:'absolute',top:195,left:100,fontSize:25,fontWeight:900,letterSpacing:4,color:'#27766b'}}>THE AI SIDE</div><div style={{position:'absolute',top:253,left:100,right:140,fontSize:58,lineHeight:1.08,fontWeight:900}}>SPEC-DRIVEN DEVELOPMENT</div><svg style={{position:'absolute',top:420,left:100}} width="880" height="820" viewBox="0 0 880 820"><defs><clipPath id="reveal"><circle cx="440" cy="380" r={blend*1000}/></clipPath></defs>{prev&&blend<1&&<Device scene={prev} t={(f-prev.start)/FPS}/>}<g clipPath="url(#reveal)"><Device scene={s} t={t}/></g></svg><Captions cue={cue} time={t}/><Audio src={staticFile('spec-short/narration.wav')}/></AbsoluteFill>}
+function Robot({x,y,s=1,t=0,concern=false}){
+ const tilt=Math.sin(t*2)*3;
+ return <g transform={`translate(${x} ${y}) scale(${s})`}>
+ <path d="M-27 -52V-7 M27 -52V-7" stroke={C.ink} strokeWidth="12" strokeLinecap="round"/>
+ <rect x="-48" y="-130" width="96" height="80" rx="20" fill="#79caba" stroke={C.ink} strokeWidth="6"/>
+ <g transform={`rotate(${tilt} 0 -165)`}><rect x="-56" y="-215" width="112" height="82" rx="20" fill="#d5f3e8" stroke={C.ink} strokeWidth="6"/>
+ <path d="M0 -215v-23" stroke={C.ink} strokeWidth="6"/><circle cx="0" cy="-244" r="7" fill={C.red}/>
+ <circle cx="-20" cy="-178" r="6" fill={C.ink}/><circle cx="20" cy="-178" r="6" fill={C.ink}/>
+ <path d={concern?'M-18 -151 Q0 -162 18 -151':'M-18 -157 Q0 -144 18 -157'} stroke={C.ink} strokeWidth="4" fill="none" strokeLinecap="round"/></g>
+ <path d={`M-48 -110 Q-72 -92 -72 -72 M48 -112 Q75 ${-110+Math.sin(t*3)*6} 76 -140`} stroke={C.ink} strokeWidth="10" fill="none" strokeLinecap="round"/>
+ </g>
+}
+function Frame({children,title='BOOK APPOINTMENT'}){return <g><R x={168} y={70} w={544} h={450} rx={30} fill="#fffdfa"/><rect x="170" y="72" width="540" height="75" rx="27" fill="#ded8f3"/><circle cx="205" cy="108" r="9" fill={C.red}/><circle cx="235" cy="108" r="9" fill={C.gold}/><circle cx="265" cy="108" r="9" fill={C.mint}/><T x={490} y={118} size={23}>{title}</T>{children}</g>}
+function Card({x,y,w=200,text,fill='#e2f2eb',size=23}){return <g><R x={x} y={y} w={w} h={65} rx={15} fill={fill} stroke="none" sw={0}/><T x={x+w/2} y={y+42} size={size}>{text}</T></g>}
+function Scene({sc,t}){
+ const e=i=>{let c=sc.cues[Math.min(i,sc.cues.length-1)];return ease(t,c.start,c.start+.7)},p=(i,j)=>{let a=sc.cues[Math.min(i,sc.cues.length-1)].start,b=sc.cues[Math.min(j,sc.cues.length-1)].start;return ease(t,a,Math.max(a+.5,b))},k=sc.kind,wig=Math.sin(t*2)*3;
+ const floor=<path d="M45 692H835" stroke="#a7b6b1" strokeWidth="6" strokeLinecap="round"/>;
+ if(k==='prompt')return <g>{floor}<Frame title="NEW FEATURE"><T x={440} y={223} size={30}>BOOK AN APPOINTMENT</T><Card x={265} y={275} w={350} text="AI IS WRITING CODE" fill="#eee8fb"/><g opacity={e(1)}><Card x={330} y={380} w={220} text="DONE!" fill="#d9f2e6" size={28}/></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/><g opacity={1-e(1)}><path d="M140 330 Q300 280 500 290" fill="none" stroke={C.purple} strokeWidth="5" strokeDasharray="10 10"/><circle cx={140+360*p(0,1)} cy={330-40*p(0,1)} r="11" fill={C.purple}/></g></g>;
+ if(k==='problem'){let walk=e(1),both=e(2),reaction=e(3);return <g>{floor}<Frame><T x={440} y={215} size={32}>AVAILABLE SLOT</T><Card x={295} y={250} w={290} text="10:00 AM" fill="#eee8fb" size={33}/><g opacity={both}><Card x={200} y={365} w={230} text="CONFIRMED" fill="#d9f2e6" size={21}/><Card x={450} y={365} w={230} text="CONFIRMED" fill="#d9f2e6" size={21}/></g></Frame><g opacity={reaction}><path d="M388 625H493V652H388Z M403 652V687 M478 652V687 M388 625V570" fill="#d9ad79" stroke={C.ink} strokeWidth="7" strokeLinejoin="round"/></g><Person x={115+180*walk} y={690} s={.66} t={t} walk={1-walk} color="#a996eb" mood={reaction?'surprise':'smile'}/><Person x={765-180*walk} y={690} s={.66} t={t} walk={1-walk} color="#ffbc83" skin="#bc825f" mood={reaction?'sad':'smile'}/><Robot x={785} y={690} s={.48} t={t} concern={reaction>.2}/></g>}
+ if(k==='spec'){return <g>{floor}<Frame title="THE SPECIFICATION"><g opacity={e(1)}><Card x={240} y={195} w={400} text="WHAT IT MUST DO" fill="#d9f2e6"/><Card x={240} y={285} w={400} text="RULES + CONSTRAINTS" fill="#eee8fb"/><Card x={240} y={375} w={400} text="HOW TO CHECK IT" fill="#fff0d3"/></g><g opacity={e(2)} transform={`rotate(${-10*(1-e(2))} 620 175)`}><R x={560} y={155} w={115} h={45} rx={8} fill="#fffaf0" stroke={C.red} sw={4}/><T x={617} y={185} size={21} fill={C.red}>SPEC</T></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/></g>}
+ if(k==='example'){let booked=e(1),race=e(2);return <g>{floor}<Frame title="THE BOOKING RULE"><T x={440} y={218} size={28}>10:00 AM</T><Card x={280} y={260} w={320} text={booked>.5?'BOOKED':'AVAILABLE'} fill={booked>.5?'#ffe7e1':'#d9f2e6'} size={29}/><g opacity={race}><path d="M220 395H660" stroke="#b8b1cf" strokeWidth="5"/><circle cx={245+120*Math.abs(Math.sin(t*2))} cy="395" r="15" fill={C.purple}/><circle cx={635-120*Math.abs(Math.sin(t*2))} cy="395" r="15" fill={C.red}/><T x={440} y={465} size={23}>TWO REQUESTS AT ONCE?</T></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t} concern={race>.5}/></g>}
+ if(k==='criteria'){let res=e(1);return <g>{floor}<Frame title="ACCEPTANCE CRITERIA"><T x={440} y={210} size={27}>TWO REQUESTS. ONE SLOT.</T><path d="M245 292H635 M245 392H635" stroke="#b8b1cf" strokeWidth="6"/><circle cx={245+260*res} cy="292" r="15" fill={C.mint}/><circle cx={245+260*res} cy="392" r="15" fill={C.red}/><g opacity={res}><Card x={445} y={260} w={220} text="BOOKED" fill="#d9f2e6"/><Card x={445} y={360} w={220} text="UNAVAILABLE" fill="#fff0d3" size={20}/></g></Frame><Person x={100} y={690} s={.65} t={t}/><Robot x={780} y={690} s={.68} t={t}/></g>}
+ if(k==='plan'){let flow=(t*90)%230;return <g>{floor}<Frame title="TECHNICAL PLAN"><T x={440} y={210} size={25}>PREVENT CONFLICTING WRITES</T><path d="M270 315H610" stroke="#abb9c4" strokeWidth="7" strokeDasharray="12 10"/><Card x={205} y={275} w={120} text="APP" fill="#d9f2e6" size={21}/><Card x={380} y={275} w={120} text="API" fill="#eee8fb" size={21}/><g><path d="M555 293v47c0 12 120 12 120 0v-47" fill="#fff0d3" stroke={C.ink} strokeWidth="5"/><ellipse cx="615" cy="293" rx="60" ry="17" fill="#ffd99b" stroke={C.ink} strokeWidth="5"/><T x={615} y={332} size={19}>DATA</T></g><circle cx={300+flow} cy="360" r="10" fill={C.purple}/><g opacity={e(1)}><T x={440} y={438} size={25}>TASKS → CODE → TEST</T></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/></g>}
+ return <g>{floor}<Frame title="SPEC-DRIVEN DEVELOPMENT"><T x={440} y={220} size={26}>DESCRIBE · BUILD · TEST</T><Card x={240} y={275} w={400} text="SHARED + TESTABLE" fill="#d9f2e6"/><g opacity={e(1)}><Card x={240} y={385} w={400} text="NEXT: GITHUB SPEC KIT" fill="#eee8fb" size={24}/></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/></g>
+}
+function Caption({cue,time}){if(!cue)return null;let words=cue.text.split(/\s+/),chunks=[];for(let i=0;i<words.length;i+=5)chunks.push(words.slice(i,i+5));let n=Math.max(0,Math.min(chunks.length-1,Math.floor((time-cue.start)/Math.max(.1,cue.end-cue.start)*chunks.length)));return <div style={{position:'absolute',left:95,right:150,bottom:300,minHeight:150,display:'flex',justifyContent:'center',alignItems:'center'}}><div style={{background:'#202842',borderRadius:22,padding:'20px 26px',color:'#fff',fontSize:50,fontWeight:800,lineHeight:1.17,textAlign:'center'}}>{chunks[n].map((w,i)=><span key={i} style={{marginRight:9,color:i===chunks[n].length-1?'#ffc56c':'white'}}>{w}</span>)}</div></div>}
+function Main(){const f=useCurrentFrame(),s=scenes.find(x=>f>=x.start&&f<x.start+x.duration)||scenes[scenes.length-1],t=(f-s.start)/FPS,cue=s.cues.find(c=>t>=c.start&&t<c.end),ix=scenes.indexOf(s),prev=ix>0?scenes[ix-1]:null,blend=prev?ease(f,s.start,s.start+18):1,bg=interpolateColors(f,scenes.map(x=>x.start),['#fff1e2','#f1eafa','#e6f4eb','#fff1db','#e8eefb','#eef6ed','#fff0e5']);return <AbsoluteFill style={{background:bg,color:C.ink,fontFamily:'Arial, sans-serif',overflow:'hidden'}}><div style={{position:'absolute',top:190,left:105,fontSize:25,fontWeight:900,letterSpacing:4,color:'#28756b'}}>THE AI SIDE</div><div style={{position:'absolute',top:250,left:105,right:165,fontSize:58,fontWeight:900,lineHeight:1.05}}>SPEC-DRIVEN DEVELOPMENT</div><svg style={{position:'absolute',left:100,top:430}} width="880" height="760" viewBox="0 0 880 760"><defs><clipPath id="wipe"><circle cx="440" cy="345" r={blend*1020}/></clipPath></defs>{prev&&blend<1&&<Scene sc={prev} t={(f-prev.start)/FPS}/>}<g clipPath="url(#wipe)"><rect x="0" y="0" width="880" height="760" fill={bg}/><Scene sc={s} t={t}/></g></svg><Caption cue={cue} time={t}/><Audio src={staticFile('spec-short/narration.wav')}/></AbsoluteFill>}
 registerRoot(()=> <Composition id="SpecShort" component={Main} width={1080} height={1920} fps={FPS} durationInFrames={TOTAL}/>);
