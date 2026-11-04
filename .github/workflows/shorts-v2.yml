@@ -1,0 +1,70 @@
+name: Shorts — harness review
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'motion/src/Shorts.jsx'
+      - '.github/workflows/shorts-v2.yml'
+permissions:
+  contents: read
+concurrency:
+  group: shorts-v2-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install renderer and voice dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg espeak-ng libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64
+          python -m pip install -r requirements.txt
+          cd motion
+          npm install
+      - name: Download open voice model
+        run: |
+          mkdir -p voices
+          base=https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1
+          curl -fL --retry 3 "$base/kokoro-v1.0.onnx" -o voices/kokoro-v1.0.onnx
+          curl -fL --retry 3 "$base/voices-v1.0.bin" -o voices/voices-v1.0.bin
+      - name: Generate approved voice and timings
+        run: python motion/harness_voice.py
+      - name: Render vertical Short
+        run: |
+          mkdir -p output/shorts-v2
+          cd motion
+          npx remotion render src/Shorts.jsx HarnessShorts ../output/shorts-v2/agent-harness.mp4 --concurrency=2
+      - name: Verify and sample scenes
+        run: |
+          ffprobe -v error -show_entries format=duration:stream=codec_type,width,height,r_frame_rate -of json output/shorts-v2/agent-harness.mp4 > output/shorts-v2/media-info.json
+          python - <<'PY'
+          import json,subprocess
+          from PIL import Image,ImageOps,ImageDraw
+          from pathlib import Path
+          out=Path('output/shorts-v2')
+          info=json.load(open(out/'media-info.json')); streams=info['streams']
+          assert any(x['codec_type']=='audio' for x in streams)
+          assert any(x['codec_type']=='video' and x.get('width')==1080 and x.get('height')==1920 and x.get('r_frame_rate')=='30/1' for x in streams)
+          assert 30<float(info['format']['duration'])<180
+          scenes=json.load(open('motion/src/harness-scenes.json')); sheet=Image.new('RGB',(270*4,480*4),'#111')
+          for i,scene in enumerate(scenes):
+              at=(scene['start']+scene['duration']//2)/30
+              path=out/f'qa-{i:02}.png'
+              subprocess.run(['ffmpeg','-v','error','-ss',str(at),'-i',str(out/'agent-harness.mp4'),'-frames:v','1','-y',str(path)],check=True)
+              img=Image.open(path).convert('RGB');img=ImageOps.contain(img,(270,480));sheet.paste(img,((i%4)*270,(i//4)*480))
+              path.unlink()
+          sheet.save(out/'layout-review.jpg',quality=88)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shorts-harness-review
+          path: output/shorts-v2/
+          retention-days: 7
