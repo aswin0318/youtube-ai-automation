@@ -37,6 +37,18 @@ jobs:
           curl -fL --retry 3 "$base/voices-v1.0.bin" -o voices/voices-v1.0.bin
       - name: Generate approved voice and timings
         run: python motion/harness_voice.py
+      - name: Render opening storyboard checkpoints
+        run: |
+          mkdir -p output/storyboard
+          cd motion
+          for frame in 60 120 150 180 219 249 750; do
+            npx remotion still src/Story.jsx HarnessShorts "../output/storyboard/$(printf '%04d' "$frame").png" --frame="$frame"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: shorts-story-checkpoints
+          path: output/storyboard/
+          retention-days: 7
       - name: Render vertical Short
         run: |
           mkdir -p output/shorts-story
