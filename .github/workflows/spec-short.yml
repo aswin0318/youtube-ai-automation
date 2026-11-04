@@ -1,0 +1,83 @@
+name: Spec Kit Short production
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'motion/src/SpecShort.jsx'
+      - '.github/workflows/spec-short.yml'
+permissions:
+  contents: read
+concurrency:
+  group: spec-short-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install renderer and voice dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg espeak-ng libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2t64
+          python -m pip install -r requirements.txt
+          cd motion
+          npm install
+      - name: Download open voice model
+        run: |
+          mkdir -p voices
+          base=https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.1
+          curl -fL --retry 3 "$base/kokoro-v1.0.onnx" -o voices/kokoro-v1.0.onnx
+          curl -fL --retry 3 "$base/voices-v1.0.bin" -o voices/voices-v1.0.bin
+      - name: Generate approved voice and timings
+        run: python motion/spec_voice.py
+      - name: Render opening storyboard checkpoints
+        run: |
+          mkdir -p output/storyboard
+          cd motion
+          for frame in 60 120 150 180 219 249 267 276 285 294 303 312 750; do
+            npx remotion still src/SpecShort.jsx SpecShort "../output/storyboard/$(printf '%04d' "$frame").png" --frame="$frame"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: spec-short-checkpoints
+          path: output/storyboard/
+          retention-days: 7
+      - name: Render vertical Short
+        run: |
+          mkdir -p output/spec-short
+          cd motion
+          npx remotion render src/SpecShort.jsx SpecShort ../output/spec-short/spec-kit.mp4 --concurrency=2
+      - name: Verify and sample scenes
+        run: |
+          ffprobe -v error -show_entries format=duration:stream=codec_type,width,height,r_frame_rate -of json output/spec-short/spec-kit.mp4 > output/spec-short/media-info.json
+          python - <<'PY'
+          import json,subprocess
+          from PIL import Image,ImageOps,ImageDraw
+          from pathlib import Path
+          out=Path('output/spec-short')
+          info=json.load(open(out/'media-info.json')); streams=info['streams']
+          assert any(x['codec_type']=='audio' for x in streams)
+          assert any(x['codec_type']=='video' and x.get('width')==1080 and x.get('height')==1920 and x.get('r_frame_rate')=='30/1' for x in streams)
+          assert 30<float(info['format']['duration'])<=120
+          scenes=json.load(open('motion/src/spec-scenes.json')); sheet=Image.new('RGB',(270*4,480*4),'#111')
+          points=[2.0,4.0,5.0,6.0,7.3,8.3]+[(scene['start']+scene['duration']//2)/30 for scene in scenes]
+          sheet=Image.new('RGB',(270*5,480*4),'#111')
+          for i,at in enumerate(points):
+              path=out/f'qa-{i:02}.png'
+              subprocess.run(['ffmpeg','-v','error','-ss',str(at),'-i',str(out/'spec-kit.mp4'),'-frames:v','1','-y',str(path)],check=True)
+              img=Image.open(path).convert('RGB');img=ImageOps.contain(img,(270,480));sheet.paste(img,((i%5)*270,(i//5)*480))
+              path.unlink()
+          sheet.save(out/'layout-review.jpg',quality=88)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: spec-short-review
+          path: output/spec-short/
+          retention-days: 7
