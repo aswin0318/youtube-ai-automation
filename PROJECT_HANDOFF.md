@@ -30,3 +30,7 @@ Episode 1 introduces spec-driven development with the user-approved cartoon stor
 ## Quality gate
 
 Render the exact branch revision, verify 90 < duration ≤ 120 seconds, inspect scene starts, middles, ends and transition frames for overlaps and matching actions, listen to narration if an audio-review capability is available, and check viewer comprehension. Be candid about unresolved limits. Never publish merely because encoding succeeds.
+
+## 5 November follow-up
+
+The 92.928-second render at 124a950f383f3371529a15585e0317f6575c3dd2 was reviewed in sampled stills and rejected: it remained dominated by small, static cards. No audio listening was possible in that review. Do not publish it. Revision 5c15b1fa629d77a1355a78469f66d34c102b6a3d introduces an animated double-booking reaction and revised rule/criteria scenes, slows the narration, and adds a comedic pause. Its render and end-to-end quality are not yet verified. Several other shots still need evaluation against the continuous-cartoon requirement. User's approved target was 1:40–1:55; maintain the absolute range of over 90 and at most 120 seconds. The 7 pm task must not publish any candidate without passing actual quality review.
