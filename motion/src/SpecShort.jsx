@@ -49,15 +49,53 @@ function Scene({sc,t}){
     </g>)}
     <g opacity={(1-confirmed)*e(1)}><path d="M380 255H500" stroke={C.purple} strokeWidth="5" strokeDasharray="8 8"/><circle cx={380+60*travel} cy="255" r="13" fill={C.purple}/><circle cx={500-60*travel} cy="255" r="13" fill={C.red}/></g>
    </g>
-   <g opacity={react}><path d="M389 625H493V652H389Z M404 652V687 M478 652V687 M389 625V570" fill="#d9ad79" stroke={C.ink} strokeWidth="7" strokeLinejoin="round"/><T x={440} y={125} size={38} fill={C.red}>WAIT... BOTH?!</T><path d="M437 151l-15 31 M457 151l15 31" stroke={C.red} strokeWidth="6" strokeLinecap="round"/></g>
-   <Person x={210+230*react} y={690-20*react} s={.82} t={t} sit={react} color="#a996eb" mood={react>.3?'surprise':'smile'} scratch={react>.45}/>
+   <g opacity={react}><path d="M389 634H493V661H389Z M404 661V687 M478 661V687 M389 634V570" fill="#d9ad79" stroke={C.ink} strokeWidth="7" strokeLinejoin="round"/><T x={440} y={125} size={38} fill={C.red}>WAIT... BOTH?!</T><path d="M437 151l-15 31 M457 151l15 31" stroke={C.red} strokeWidth="6" strokeLinecap="round"/></g>
+   <Person x={210+230*react} y={690} s={.82} t={t} sit={react} color="#a996eb" mood={react>.3?'surprise':'smile'} scratch={react>.45}/>
    <Person x={670-76*react} y={690} s={.82} t={t+1} color="#ffbc83" skin="#bc825f" mood={react>.3?'sad':'smile'} scratch={react>.45}/>
    <g opacity={react}><Robot x={785} y={690} s={.5} t={t} concern={true}/></g>
   </g>
  }
- if(k==='spec'){return <g>{floor}<Frame title="THE SPECIFICATION"><g opacity={ease(t,sc.cues[1].start,sc.cues[1].start+.5)} transform={`translate(${(1-ease(t,sc.cues[1].start,sc.cues[1].start+.5))*30} 0)`}><Card x={240} y={195} w={400} text="WHAT IT MUST DO" fill="#d9f2e6"/></g><g opacity={ease(t,sc.cues[1].start+1.0,sc.cues[1].start+1.5)}><Card x={240} y={285} w={400} text="RULES + CONSTRAINTS" fill="#eee8fb"/></g><g opacity={ease(t,sc.cues[1].start+2.0,sc.cues[1].start+2.5)}><Card x={240} y={375} w={400} text="HOW TO CHECK IT" fill="#fff0d3"/></g><g opacity={e(2)} transform={`rotate(${-10*(1-e(2))} 620 175)`}><R x={560} y={155} w={115} h={45} rx={8} fill="#fffaf0" stroke={C.red} sw={4}/><T x={617} y={185} size={21} fill={C.red}>SPEC</T></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/></g>}
- if(k==='example'){let booked=e(1),race=e(2);return <g>{floor}<Frame title="THE BOOKING RULE"><T x={440} y={218} size={28}>10:00 AM</T><Card x={280} y={260} w={320} text={booked>.5?'BOOKED':'AVAILABLE'} fill={booked>.5?'#ffe7e1':'#d9f2e6'} size={29}/><g opacity={race}><path d="M220 395H660" stroke="#b8b1cf" strokeWidth="5"/><circle cx={245+120*Math.abs(Math.sin(t*2))} cy="395" r="15" fill={C.purple}/><circle cx={635-120*Math.abs(Math.sin(t*2))} cy="395" r="15" fill={C.red}/><T x={440} y={465} size={23}>TWO REQUESTS AT ONCE?</T></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t} concern={race>.5}/></g>}
- if(k==='criteria'){let res=e(1);return <g>{floor}<Frame title="ACCEPTANCE CRITERIA"><T x={440} y={210} size={27}>TWO REQUESTS. ONE SLOT.</T><path d="M245 292H635 M245 392H635" stroke="#b8b1cf" strokeWidth="6"/><circle cx={245+260*res} cy="292" r="15" fill={C.mint}/><circle cx={245+260*res} cy="392" r="15" fill={C.red}/><g opacity={res}><Card x={445} y={260} w={220} text="BOOKED" fill="#d9f2e6"/><Card x={445} y={360} w={220} text="UNAVAILABLE" fill="#fff0d3" size={20}/></g></Frame><Person x={100} y={690} s={.65} t={t}/><Robot x={780} y={690} s={.68} t={t}/></g>}
+ if(k==='spec'){
+  const ink=e(1),stamp=e(2),penX=330+250*ease(t,sc.cues[1].start,sc.cues[1].start+2);
+  return <g>{floor}
+   <g transform={`translate(0 ${(1-ink)*25})`}><R x={212} y={65} w={455} h={490} rx={20} fill="#fffdfa" sw={6}/>
+    <path d="M580 65v80h87" fill="#eee8fb" stroke={C.ink} strokeWidth="5"/>
+    <T x={400} y={130} size={31}>THE SPEC</T>
+    <g opacity={ink}><path d="M260 185H590 M260 273H590 M260 361H590" stroke="#d2d9dc" strokeWidth="5"/>
+     <T x={290} y={215} anchor="start" size={25}>WHAT SHOULD HAPPEN</T>
+     <T x={290} y={303} anchor="start" size={25}>RULES + EDGE CASES</T>
+     <T x={290} y={391} anchor="start" size={25}>HOW TO CHECK IT</T>
+     <path d={`M${penX} 456l45 -45 17 17 -45 45 -24 7z`} fill={C.gold} stroke={C.ink} strokeWidth="5"/>
+    </g>
+    <g opacity={stamp} transform={`rotate(-9 512 493)`}><R x={395} y={466} w={230} h={58} rx={8} fill="#fef6ee" stroke={C.red} sw={5}/><T x={510} y={506} size={25} fill={C.red}>SPECIFICATION</T></g>
+   </g>
+   <Person x={100} y={690} s={.75} t={t} arm="point"/><Robot x={780} y={690} s={.76} t={t}/>
+  </g>
+ }
+ if(k==='example'){
+  const booked=e(1),race=e(2),p1=245+130*ease(t,sc.cues[2].start,sc.cues[2].start+1.4),p2=635-130*ease(t,sc.cues[2].start,sc.cues[2].start+1.4);
+  return <g>{floor}
+   <T x={440} y={88} size={32}>THE BOOKING RULE</T>
+   <R x={285} y={120} w={310} h={280} rx={22} fill="#fffdfa" sw={6}/><rect x="287" y="122" width="306" height="65" rx="19" fill="#ded8f3"/>
+   <T x={440} y={165} size={27}>10:00 AM</T>
+   <g opacity={1-booked}><T x={440} y={270} size={37} fill={C.mint}>AVAILABLE</T><path d="M365 310l30 30 55-65" fill="none" stroke={C.mint} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/></g>
+   <g opacity={booked}><T x={440} y={270} size={37} fill={C.red}>BOOKED</T><path d="M400 297l70 70 M470 297l-70 70" stroke={C.red} strokeWidth="10" strokeLinecap="round"/></g>
+   <g opacity={race}><path d="M205 485H675" stroke="#b8b1cf" strokeWidth="6" strokeDasharray="10 8"/><circle cx={p1} cy="485" r="22" fill={C.purple}/><circle cx={p2} cy="485" r="22" fill={C.red}/><T x={440} y={550} size={24}>TWO REQUESTS AT ONCE?</T></g>
+   <Person x={100} y={690} s={.75} t={t} arm="point"/><Robot x={780} y={690} s={.76} t={t} concern={race>.5}/>
+  </g>
+ }
+ if(k==='criteria'){
+  const res=e(1),x=245+185*res;
+  return <g>{floor}<T x={440} y={92} size={34}>HOW DO WE KNOW IT WORKS?</T>
+   <T x={440} y={155} size={25}>TWO REQUESTS. ONE SLOT.</T>
+   <path d="M180 255H700 M180 390H700" stroke="#c9c5d9" strokeWidth="6" strokeDasharray="8 10"/>
+   <g transform={`translate(${x} 255)`}><circle r="25" fill={C.mint}/><path d="M-11 0l8 9 16-18" fill="none" stroke="white" strokeWidth="6" strokeLinecap="round"/></g>
+   <g transform={`translate(${x} 390)`}><circle r="25" fill={C.red}/><path d="M-10-10l20 20 M10-10l-20 20" stroke="white" strokeWidth="6" strokeLinecap="round"/></g>
+   <g opacity={res}><Card x={500} y={222} w={230} text="BOOKED" fill="#d9f2e6" size={24}/><Card x={500} y={357} w={230} text="TRY ANOTHER" fill="#fff0d3" size={22}/></g>
+   <T x={440} y={505} size={25}>ONE SUCCEEDS. ONE GETS A MESSAGE.</T>
+   <Person x={100} y={690} s={.75} t={t}/><Robot x={780} y={690} s={.76} t={t}/>
+  </g>
+ }
  if(k==='plan'){let flow=(t*90)%230;return <g>{floor}<Frame title="TECHNICAL PLAN"><T x={440} y={210} size={25}>PREVENT CONFLICTING WRITES</T><path d="M270 315H610" stroke="#abb9c4" strokeWidth="7" strokeDasharray="12 10"/><Card x={205} y={275} w={120} text="APP" fill="#d9f2e6" size={21}/><Card x={380} y={275} w={120} text="API" fill="#eee8fb" size={21}/><g><path d="M555 293v47c0 12 120 12 120 0v-47" fill="#fff0d3" stroke={C.ink} strokeWidth="5"/><ellipse cx="615" cy="293" rx="60" ry="17" fill="#ffd99b" stroke={C.ink} strokeWidth="5"/><T x={615} y={332} size={19}>DATA</T></g><path d="M260 242H620" stroke={C.purple} strokeWidth="3" strokeDasharray="4 10" opacity=".45"/><rect x={260+flow} y="230" width="25" height="25" rx="6" fill={C.mint}/><rect x={260+((t*90+125)%230)} y="230" width="22" height="22" rx="5" fill={C.red}/><g opacity={e(1)}><T x={440} y={438} size={25}>TASKS → CODE → TEST</T></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/></g>}
  return <g>{floor}<Frame title="SPEC-DRIVEN DEVELOPMENT"><T x={440} y={220} size={26}>DESCRIBE · BUILD · TEST</T><Card x={240} y={275} w={400} text="SHARED + TESTABLE" fill="#d9f2e6"/><g opacity={e(1)}><path d="M310 420v-33q0-20 20-20h55q20 0 20 20v33" fill="none" stroke={C.ink} strokeWidth="7"/><R x={275} y={415} w={330} h={78} rx={15} fill="#eee8fb" stroke={C.ink} sw={5}/><T x={440} y={464} size={22}>NEXT: GITHUB SPEC KIT</T></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/></g>
 }
