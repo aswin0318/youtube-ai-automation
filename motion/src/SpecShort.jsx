@@ -1,105 +1,94 @@
 import React from 'react';
 import {AbsoluteFill,Audio,Composition,Easing,interpolate,interpolateColors,registerRoot,staticFile,useCurrentFrame} from 'remotion';
 import scenes from './spec-scenes.json';
-const FPS=30,TOTAL=scenes.reduce((a,s)=>a+s.duration,0);
-const o={extrapolateLeft:'clamp',extrapolateRight:'clamp',easing:Easing.bezier(.22,1,.36,1)};
-const ease=(v,a,b)=>interpolate(v,[a,b],[0,1],o);
-const C={ink:'#202842',mint:'#57bfa3',purple:'#8e7bd5',gold:'#ffc56c',red:'#ef7b73',cream:'#fffaf0',light:'#ebf2f4'};
-const T=({x,y,children,size=26,fill=C.ink,weight=800,anchor='middle'})=><text x={x} y={y} textAnchor={anchor} fontSize={size} fontWeight={weight} fill={fill}>{children}</text>;
-const R=({x,y,w,h,fill=C.cream,stroke=C.ink,sw=5,rx=18})=><rect x={x} y={y} width={w} height={h} rx={rx} fill={fill} stroke={stroke} strokeWidth={sw}/>;
-function Person({x,y,s=1,t=0,color='#a996eb',skin='#eeb887',mood='smile',arm='down',walk=0,sit=0,scratch=0}){
- const swing=Math.sin(t*5)*walk*12,armY=arm==='point'?-32:arm==='raise'?-95:40,blink=Math.abs(Math.sin(t*1.3))>.992;
- return <g transform={`translate(${x} ${y}) scale(${s})`}>
- <path d={`M-23 -68 L${-30+swing+34*sit} ${-5-32*sit} L${-30+swing+45*sit} -5 M23 -68 L${30-swing+25*sit} ${-5-32*sit} L${30-swing+32*sit} -5`} stroke={C.ink} strokeWidth="14" strokeLinecap="round"/>
- <path d="M-51 -158 Q0 -185 51 -158 L58 -68 H-58Z" fill={color} stroke={C.ink} strokeWidth="6"/>
- <path d={`M-47 -150 Q-75 -130 -66 -106 M48 -151 Q${scratch?82:75} ${scratch?-195+8*Math.sin(t*6):-135+armY*.25} ${scratch?42:81} ${scratch?-240+7*Math.sin(t*6):-140+armY}`} fill="none" stroke={C.ink} strokeWidth="13" strokeLinecap="round"/>
- <circle cx="0" cy="-216" r="52" fill={skin} stroke={C.ink} strokeWidth="6"/>
- <path d="M-52 -220 Q-50 -272 -2 -269 Q48 -270 52 -220 Q20 -244 -10 -238 Q-32 -237 -52 -220Z" fill="#42334a"/>
- <ellipse cx="-19" cy="-216" rx="4.5" ry={blink?1:4.5} fill={C.ink}/><ellipse cx="19" cy="-216" rx="4.5" ry={blink?1:4.5} fill={C.ink}/>
- <path d={mood==='sad'?'M-19 -190 Q0 -205 19 -190':mood==='surprise'?'M-4 -199 Q9 -202 7 -188 Q-4 -184 -4 -199':'M-19 -193 Q0 -178 19 -193'} fill="none" stroke={C.ink} strokeWidth="4.5" strokeLinecap="round"/>
- </g>
-}
-function Robot({x,y,s=1,t=0,concern=false}){
- const tilt=Math.sin(t*2)*3;
- return <g transform={`translate(${x} ${y}) scale(${s})`}>
- <path d="M-27 -52V-7 M27 -52V-7" stroke={C.ink} strokeWidth="12" strokeLinecap="round"/>
- <rect x="-48" y="-130" width="96" height="80" rx="20" fill="#79caba" stroke={C.ink} strokeWidth="6"/>
- <g transform={`rotate(${tilt} 0 -165)`}><rect x="-56" y="-215" width="112" height="82" rx="20" fill="#d5f3e8" stroke={C.ink} strokeWidth="6"/>
- <path d="M0 -215v-23" stroke={C.ink} strokeWidth="6"/><circle cx="0" cy="-244" r="7" fill={C.red}/>
- <circle cx="-20" cy="-178" r="6" fill={C.ink}/><circle cx="20" cy="-178" r="6" fill={C.ink}/>
- <path d={concern?'M-18 -151 Q0 -162 18 -151':'M-18 -157 Q0 -144 18 -157'} stroke={C.ink} strokeWidth="4" fill="none" strokeLinecap="round"/></g>
- <path d={`M-48 -110 Q-72 -92 -72 -72 M48 -112 Q75 ${-110+Math.sin(t*3)*6} 76 -140`} stroke={C.ink} strokeWidth="10" fill="none" strokeLinecap="round"/>
- </g>
-}
-function Frame({children,title='BOOK APPOINTMENT'}){return <g><R x={168} y={70} w={544} h={450} rx={30} fill="#fffdfa"/><rect x="170" y="72" width="540" height="75" rx="27" fill="#ded8f3"/><circle cx="205" cy="108" r="9" fill={C.red}/><circle cx="235" cy="108" r="9" fill={C.gold}/><circle cx="265" cy="108" r="9" fill={C.mint}/><T x={490} y={118} size={23}>{title}</T>{children}</g>}
-function Card({x,y,w=200,text,fill='#e2f2eb',size=23}){return <g><R x={x} y={y} w={w} h={65} rx={15} fill={fill} stroke="none" sw={0}/><T x={x+w/2} y={y+42} size={size}>{text}</T></g>}
-function Scene({sc,t,hideCast=false}){
- const e=i=>{let c=sc.cues[Math.min(i,sc.cues.length-1)];return ease(t,c.start,c.start+.7)},p=(i,j)=>{let a=sc.cues[Math.min(i,sc.cues.length-1)].start,b=sc.cues[Math.min(j,sc.cues.length-1)].start;return ease(t,a,Math.max(a+.5,b))},k=sc.kind,wig=Math.sin(t*2)*3;
- const floor=hideCast?null:<path d="M45 692H835" stroke="#a7b6b1" strokeWidth="6" strokeLinecap="round"/>;
- if(k==='prompt')return <g>{floor}<Frame title="NEW FEATURE"><T x={440} y={223} size={30}>BOOK AN APPOINTMENT</T><g opacity={1-e(1)}><path d="M270 275H610 M270 305H540 M270 335H575" stroke={C.purple} strokeWidth="8" strokeLinecap="round" strokeDasharray="340" strokeDashoffset={340*(1-ease(t,0,2))}/></g><g opacity={e(1)}><Card x={330} y={380} w={220} text="DONE!" fill="#d9f2e6" size={28}/></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/><g opacity={1-e(1)}><path d="M180 570H700" fill="none" stroke={C.purple} strokeWidth="5" strokeDasharray="10 10"/><circle cx={180+520*p(0,1)} cy="570" r="11" fill={C.purple}/></g></g>;
+const FPS=30,TOTAL=scenes.reduce((n,s)=>n+s.duration,0);
+const clamp={extrapolateLeft:'clamp',extrapolateRight:'clamp',easing:Easing.bezier(.22,1,.36,1)};
+const ease=(v,a,b)=>interpolate(v,[a,b],[0,1],clamp);
+const C={white:'#F4F1EA',dim:'#A6A7AC',sub:'#6F747D',line:'#44454D',panel:'#191C21',panel2:'#20252A',mint:'#9DE7C7',coral:'#FF9D8E',amber:'#EBC98B',lav:'#C5BBF6',ink:'#12151A'};
+const txt=(x,y,size,fill,children,opts={})=><text x={x} y={y} fontSize={size} fill={fill} fontFamily="Arial, sans-serif" fontWeight={opts.weight||700} textAnchor={opts.anchor||'start'} letterSpacing={opts.spacing||0}>{children}</text>;
+const Box=({x,y,w,h,children,fill=C.panel,stroke=C.line,rx=24})=><g><rect x={x} y={y} width={w} height={h} rx={rx} fill={fill} stroke={stroke} strokeWidth="2"/>{children}</g>;
+const Pill=({x,y,w,label,color=C.mint,fill='#293C35'})=><g><rect x={x} y={y} width={w} height="44" rx="22" fill={fill}/>{txt(x+w/2,y+30,19,color,label,{anchor:'middle',weight:800})}</g>;
+const Rise=({children,amount})=><g opacity={amount} transform={`translate(0 ${(1-amount)*22})`}>{children}</g>;
+function Avatar({x,y,fill=C.lav,mood='smile',s=1}){return <g transform={`translate(${x} ${y}) scale(${s})`}><circle r="44" fill={fill}/><circle cx="-13" cy="-5" r="4" fill={C.ink}/><circle cx="13" cy="-5" r="4" fill={C.ink}/><path d={mood==='sad'?'M-15 20 Q0 7 15 20':mood==='surprise'?'M0 11a7 8 0 1 0 0 16a7 8 0 1 0 0 -16':'M-15 11 Q0 25 15 11'} fill="none" stroke={C.ink} strokeWidth="4" strokeLinecap="round"/></g>}
+function Scene({sc,t}){
+ const cue=(i)=>sc.cues[Math.min(i,sc.cues.length-1)]?.start||0;
+ const e=(i,d=.7)=>ease(t,cue(i),cue(i)+d), k=sc.kind;
+ const enter=ease(t,0,.65), pulse=(Math.sin(t*2.5)+1)/2;
+ if(k==='prompt'){
+  const done=e(1),draw=ease(t,.1,2.1);
+  return <g><Rise amount={enter}><Box x={62} y={55} w={796} h={410}>
+   {txt(100,108,22,C.dim,'NEW REQUEST',{spacing:2})}<rect x="100" y="148" width="720" height="190" rx="16" fill="#111417" stroke="#41464A" strokeWidth="2"/>
+   {txt(128,207,34,C.white,'Build an appointment')}{txt(128,253,34,C.white,'booking feature.')}
+   <path d="M128 294H680" stroke={C.mint} strokeWidth="4" strokeLinecap="round" strokeDasharray="552" strokeDashoffset={552*(1-draw)}/>
+   <Pill x={100} y={378} w={174} label="AI AGENT" color={C.mint}/><g opacity={done}><Pill x={661} y={378} w={154} label="DONE ✓" color={C.mint}/></g>
+  </Box></Rise><g opacity={enter}><path d="M150 565H770" stroke="#373D40" strokeWidth="4" strokeLinecap="round"/><circle cx={150+620*ease(t,.5,3.3)} cy="565" r="8" fill={C.mint}/>{txt(150,630,25,C.dim,'PROMPT')}{txt(770,630,25,C.dim,'WORKING CODE',{anchor:'end'})}</g></g>
+ }
  if(k==='problem'){
-  const arrive=p(1,2), confirmed=e(2), react=e(3), phonesOut=e(3), travel=ease(t,sc.cues[1].start,sc.cues[1].start+1.5);
-  return <g>{floor}
-   <g opacity={1-phonesOut} transform={`translate(0 ${-40*phonesOut})`}>
-    <T x={440} y={90} size={32}>ONE APPOINTMENT. TWO PATIENTS.</T>
-    {[0,1].map((i)=><g key={i} transform={`translate(${i?500:190} 125)`}>
-     <R x={0} y={0} w={190} h={240} rx={24} fill="#fffdfa" sw={5}/><rect x={69} y={12} width={52} height={7} rx={4} fill={C.ink}/>
-     <T x={95} y={65} size={21}>APPOINTMENT</T><T x={95} y={112} size={31}>10:00</T>
-     <g opacity={confirmed}><Card x={16} y={145} w={158} text="CONFIRMED" fill="#d9f2e6" size={19}/></g>
-    </g>)}
-    <g opacity={(1-confirmed)*e(1)}><path d="M380 255H500" stroke={C.purple} strokeWidth="5" strokeDasharray="8 8"/><circle cx={380+60*travel} cy="255" r="13" fill={C.purple}/><circle cx={500-60*travel} cy="255" r="13" fill={C.red}/></g>
-   </g>
-   <g opacity={react}><path d="M389 634H493V661H389Z M404 661V687 M478 661V687 M389 634V570" fill="#d9ad79" stroke={C.ink} strokeWidth="7" strokeLinejoin="round"/><T x={440} y={125} size={38} fill={C.red}>WAIT... BOTH?!</T><path d="M437 151l-15 31 M457 151l15 31" stroke={C.red} strokeWidth="6" strokeLinecap="round"/></g>
-   <Person x={210+230*react} y={690} s={.82} t={t} sit={react} color="#a996eb" mood={react>.3?'surprise':'smile'} scratch={react>.45}/>
-   <Person x={670-76*react} y={690} s={.82} t={t+1} color="#ffbc83" skin="#bc825f" mood={react>.3?'sad':'smile'} scratch={react>.45}/>
-   <g opacity={react}><Robot x={785} y={690} s={.5} t={t} concern={true}/></g>
-  </g>
+  const requests=e(1),confirm=e(2),reaction=e(3);
+  return <g><Rise amount={enter}><Box x={100} y={44} w={720} h={270}><Pill x={140} y={83} w={190} label="ONE SLOT" color={C.amber} fill="#3B3427"/>{txt(140,205,65,C.white,'10:00 AM')}{txt(140,257,26,C.dim,'Doctor appointment')}
+   <circle cx="745" cy="140" r="32" fill="#333B38"/><path d="M731 140l10 10 20-23" stroke={C.mint} strokeWidth="5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+  </Box></Rise><g opacity={requests}><path d="M280 392V348Q280 326 310 326H610Q640 326 640 348V392" stroke="#62696C" strokeWidth="3" fill="none" strokeDasharray="7 10"/>
+  <Rise amount={requests}><Box x={65} y={398} w={360} h={182} fill="#20232A"><Avatar x={126} y={461} s={.65}/>{txt(176,460,25,C.white,'PATIENT 01')}{txt(176,500,23,C.dim,'10:00 AM')}<g opacity={confirm}><Pill x={104} y={524} w={242} label="CONFIRMED"/></g></Box>
+  <Box x={495} y={398} w={360} h={182} fill="#20232A"><Avatar x={556} y={461} s={.65} fill={C.amber}/>{txt(606,460,25,C.white,'PATIENT 02')}{txt(606,500,23,C.dim,'10:00 AM')}<g opacity={confirm}><Pill x={534} y={524} w={242} label="CONFIRMED"/></g></Box></Rise></g>
+  <g opacity={reaction}><rect x="210" y="646" width="500" height="82" rx="22" fill="#3B292C" stroke="#824E50" strokeWidth="2"/>{txt(460,698,29,C.coral,'WAIT... BOTH?!',{anchor:'middle'})}</g></g>
  }
  if(k==='spec'){
-  const ink=e(1),stamp=e(2),penX=330+250*ease(t,sc.cues[1].start,sc.cues[1].start+2);
-  return <g>{floor}
-   <g transform={`translate(0 ${(1-ink)*25})`}><R x={212} y={65} w={455} h={490} rx={20} fill="#fffdfa" sw={6}/>
-    <path d="M580 65v80h87" fill="#eee8fb" stroke={C.ink} strokeWidth="5"/>
-    <T x={400} y={130} size={31}>THE SPEC</T>
-    <g opacity={ink}><path d="M260 185H590 M260 273H590 M260 361H590" stroke="#d2d9dc" strokeWidth="5"/>
-     <T x={290} y={215} anchor="start" size={25}>WHAT SHOULD HAPPEN</T>
-     <T x={290} y={303} anchor="start" size={25}>RULES + EDGE CASES</T>
-     <T x={290} y={391} anchor="start" size={25}>HOW TO CHECK IT</T>
-     <path d={`M${penX} 456l45 -45 17 17 -45 45 -24 7z`} fill={C.gold} stroke={C.ink} strokeWidth="5"/>
-    </g>
-    <g opacity={stamp} transform={`rotate(-9 512 493)`}><R x={395} y={466} w={230} h={58} rx={8} fill="#fef6ee" stroke={C.red} sw={5}/><T x={510} y={506} size={25} fill={C.red}>SPECIFICATION</T></g>
-   </g>
-   {!hideCast&&<g><Person x={100} y={690} s={.75} t={t} arm="point"/><Robot x={780} y={690} s={.76} t={t}/></g>}
-  </g>
+  const show=e(1),stamp=e(2); const rows=[['01','WHAT IT MUST DO','One patient books a slot'],['02','RULES + CONSTRAINTS','No duplicate bookings'],['03','HOW TO CHECK IT','Define what success means']];
+  return <g><Rise amount={enter}><Box x={88} y={35} w={744} h={635} fill="#F3F0E9" stroke="#F3F0E9">
+  {txt(128,100,22,'#727875','FEATURE DOCUMENT',{spacing:2})}{txt(128,165,45,C.ink,'Appointment booking')}
+  <path d="M128 196H792" stroke="#D3D4CC" strokeWidth="2"/>
+  {rows.map((r,i)=>{let v=ease(t,cue(1)+i*.65,cue(1)+i*.65+.6);return <g key={r[0]} opacity={show*v} transform={`translate(0 ${(1-v)*14})`}><rect x="128" y={230+i*115} width="52" height="52" rx="14" fill={i===0?'#DCF3E7':i===1?'#F9DDD8':'#F5E7C4'}/>{txt(154,264+i*115,20,C.ink,r[0],{anchor:'middle'})}{txt(202,255+i*115,24,C.ink,r[1])}{txt(202,292+i*115,22,'#616B68',r[2])}</g>})}
+  <g opacity={stamp}><rect x="566" y="570" width="216" height="52" rx="12" fill="#1D3029"/>{txt(674,605,22,C.mint,'SPECIFICATION',{anchor:'middle'})}</g>
+  </Box></Rise></g>
  }
  if(k==='example'){
-  const booked=e(1),race=e(2),p1=245+130*ease(t,sc.cues[2].start,sc.cues[2].start+1.4),p2=635-130*ease(t,sc.cues[2].start,sc.cues[2].start+1.4);
-  return <g>{floor}
-   <T x={440} y={88} size={32}>THE BOOKING RULE</T>
-   <R x={285} y={120} w={310} h={280} rx={22} fill="#fffdfa" sw={6}/><rect x="287" y="122" width="306" height="65" rx="19" fill="#ded8f3"/>
-   <T x={440} y={165} size={27}>10:00 AM</T>
-   <g opacity={1-booked}><T x={440} y={270} size={37} fill={C.mint}>AVAILABLE</T><path d="M397 336l30 30 55-55" fill="none" stroke={C.mint} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/></g>
-   <g opacity={booked}><T x={440} y={270} size={37} fill={C.red}>BOOKED</T><path d="M400 297l70 70 M470 297l-70 70" stroke={C.red} strokeWidth="10" strokeLinecap="round"/></g>
-   <g opacity={race}><path d="M205 485H675" stroke="#b8b1cf" strokeWidth="6" strokeDasharray="10 8"/><circle cx={p1} cy="485" r="22" fill={C.purple}/><circle cx={p2} cy="485" r="22" fill={C.red}/><T x={440} y={550} size={24}>TWO REQUESTS AT ONCE?</T></g>
-   {!hideCast&&<g><Person x={100} y={690} s={.75} t={t} arm="point"/><Robot x={780} y={690} s={.76} t={t} concern={race>.5}/></g>}
-  </g>
+  const booked=e(1),race=e(2),move=ease(t,cue(2),cue(2)+1.4);
+  return <g><Rise amount={enter}><Box x={170} y={40} w={580} h={365} fill="#F4F1EA" stroke="#F4F1EA"><rect x="170" y="40" width="580" height="82" rx="22" fill="#D6E9DF"/>{txt(460,94,25,'#264B3C','APPOINTMENT',{anchor:'middle',spacing:2})}{txt(460,212,58,C.ink,'10:00 AM',{anchor:'middle'})}
+  <g opacity={1-ease(t,cue(1),cue(1)+.25)}><rect x="280" y="256" width="360" height="74" rx="18" fill="#D9F2E4"/>{txt(460,304,30,'#34745B','AVAILABLE ✓',{anchor:'middle'})}</g>
+  <g opacity={ease(t,cue(1)+.25,cue(1)+.6)}><rect x="280" y="256" width="360" height="74" rx="18" fill="#F8DCD5"/>{txt(460,304,30,'#A9534D','BOOKED',{anchor:'middle'})}</g>
+  </Box></Rise><g opacity={race}><path d="M148 543H772" stroke="#5D6664" strokeWidth="4" strokeDasharray="7 12"/><circle cx={170+170*move} cy="543" r="20" fill={C.mint}/><circle cx={750-170*move} cy="543" r="20" fill={C.coral}/>{txt(460,630,29,C.white,'Two requests. One slot.',{anchor:'middle'})}{txt(460,676,24,C.dim,'What happens at the same time?',{anchor:'middle'})}</g></g>
  }
  if(k==='criteria'){
-  const res=e(1),x=245+185*res;
-  return <g>{floor}<T x={440} y={92} size={34}>HOW DO WE KNOW IT WORKS?</T>
-   <T x={440} y={155} size={25}>TWO REQUESTS. ONE SLOT.</T>
-   <path d="M180 255H700 M180 390H700" stroke="#c9c5d9" strokeWidth="6" strokeDasharray="8 10"/>
-   <g transform={`translate(${x} 255)`}><circle r="25" fill={C.mint}/><path d="M-11 0l8 9 16-18" fill="none" stroke="white" strokeWidth="6" strokeLinecap="round"/></g>
-   <g transform={`translate(${x} 390)`}><circle r="25" fill={C.red}/><path d="M-10-10l20 20 M10-10l-20 20" stroke="white" strokeWidth="6" strokeLinecap="round"/></g>
-   <g opacity={res}><Card x={500} y={222} w={230} text="BOOKED" fill="#d9f2e6" size={24}/><Card x={500} y={357} w={230} text="TRY ANOTHER" fill="#fff0d3" size={22}/></g>
-   <T x={440} y={505} size={25}>ONE SUCCEEDS. ONE GETS A MESSAGE.</T>
-   <Person x={100} y={690} s={.75} t={t}/><Robot x={780} y={690} s={.76} t={t}/>
-  </g>
+  const result=e(1);return <g><Rise amount={enter}><Box x={84} y={45} w={752} h={570}>
+   {txt(124,105,21,C.dim,'ACCEPTANCE CRITERIA',{spacing:2})}{txt(124,163,36,C.white,'Two requests. One slot.')}
+   <path d="M124 199H796" stroke={C.line} strokeWidth="2"/>
+   <circle cx="160" cy="292" r="23" fill="#335F4B"/><path d="M149 292l8 8 16-19" stroke={C.mint} strokeWidth="5" fill="none" strokeLinecap="round"/>{txt(206,284,30,C.white,'First booking')}{txt(206,321,23,C.dim,'The slot is reserved')}<g opacity={result}><Pill x={600} y={264} w={190} label="SUCCESS"/></g>
+   <circle cx="160" cy="436" r="23" fill="#69403E"/><path d="M152 428l16 16m0-16l-16 16" stroke={C.coral} strokeWidth="4" strokeLinecap="round"/>{txt(206,428,30,C.white,'Second booking')}{txt(206,465,23,C.dim,'A clear message appears')}<g opacity={result}><Pill x={600} y={408} w={190} label="TRY AGAIN" color={C.coral} fill="#3B292C"/></g>
+  </Box></Rise></g>
  }
- if(k==='plan'){let flow=(t*90)%230;return <g>{floor}<Frame title="TECHNICAL PLAN"><T x={440} y={210} size={25}>PREVENT CONFLICTING WRITES</T><path d="M270 315H610" stroke="#abb9c4" strokeWidth="7" strokeDasharray="12 10"/><Card x={205} y={275} w={120} text="APP" fill="#d9f2e6" size={21}/><Card x={380} y={275} w={120} text="API" fill="#eee8fb" size={21}/><g><path d="M555 293v47c0 12 120 12 120 0v-47" fill="#fff0d3" stroke={C.ink} strokeWidth="5"/><ellipse cx="615" cy="293" rx="60" ry="17" fill="#ffd99b" stroke={C.ink} strokeWidth="5"/><T x={615} y={332} size={19}>DATA</T></g><path d="M260 242H620" stroke={C.purple} strokeWidth="3" strokeDasharray="4 10" opacity=".45"/><rect x={260+flow} y="230" width="25" height="25" rx="6" fill={C.mint}/><rect x={260+((t*90+125)%230)} y="230" width="22" height="22" rx="5" fill={C.red}/><g opacity={e(1)}><T x={440} y={438} size={25}>TASKS → CODE → TEST</T></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/></g>}
- return <g>{floor}<Frame title="SPEC-DRIVEN DEVELOPMENT"><T x={440} y={220} size={26}>DESCRIBE · BUILD · TEST</T><Card x={240} y={275} w={400} text="SHARED + TESTABLE" fill="#d9f2e6"/><g opacity={e(1)}><path d="M310 420v-33q0-20 20-20h55q20 0 20 20v33" fill="none" stroke={C.ink} strokeWidth="7"/><R x={275} y={415} w={330} h={78} rx={15} fill="#eee8fb" stroke={C.ink} sw={5}/><T x={440} y={464} size={22}>NEXT: GITHUB SPEC KIT</T></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/></g>
+ if(k==='plan'){
+  const task=e(1),review=e(2),travel=(t*90)%540;
+  return <g><Rise amount={enter}><Box x={75} y={45} w={770} h={490}>
+   {txt(115,108,21,C.dim,'TECHNICAL PLAN',{spacing:2})}{txt(115,170,35,C.white,'Prevent conflicting writes')}
+   <path d="M205 315H715" stroke="#66736C" strokeWidth="4" strokeDasharray="8 10"/><circle cx={195+travel} cy="315" r="9" fill={C.mint}/>
+   {[['APP',170,'#263A33'],['API',380,'#302F40'],['DATABASE',590,'#443B2B']].map(([label,x,fill])=><g key={label}><rect x={x} y="252" width="160" height="118" rx="22" fill={fill} stroke="#59615E" strokeWidth="2"/>{txt(x+80,319,24,C.white,label,{anchor:'middle'})}</g>)}
+   <g opacity={task}>{txt(460,458,28,C.mint,'TASKS   →   CODE   →   TEST',{anchor:'middle'})}</g>
+  </Box></Rise><g opacity={review}><rect x="190" y="604" width="540" height="78" rx="20" fill="#283C34" stroke="#5B8874" strokeWidth="2"/>{txt(460,654,26,C.mint,'HUMAN REVIEW MATTERS',{anchor:'middle'})}</g></g>
+ }
+ const next=e(1);return <g><Rise amount={enter}><Box x={90} y={80} w={740} h={390}><Pill x={130} y={122} w={220} label="THE TAKEAWAY" color={C.amber} fill="#3C3528"/>{txt(130,237,38,C.white,'Clear requirements.')}{txt(130,294,38,C.white,'A plan. Testable results.')}{txt(130,372,25,C.dim,'Humans and agents share the same goal.')}</Box></Rise><g opacity={next} transform={`translate(0 ${(1-next)*24})`}><Box x={165} y={560} w={590} h={130} fill="#26382F" stroke="#507764"/>{txt(460,615,22,C.mint,'NEXT EPISODE',{anchor:'middle',spacing:2})}{txt(460,659,32,C.white,'GitHub Spec Kit',{anchor:'middle'})}</g></g>
 }
-function Caption({cue,time}){if(!cue)return null;let words=cue.text.split(/\s+/),chunks=[];for(let i=0;i<words.length;i+=5)chunks.push(words.slice(i,i+5));let n=Math.max(0,Math.min(chunks.length-1,Math.floor((time-cue.start)/Math.max(.1,cue.end-cue.start)*chunks.length)));return <div style={{position:'absolute',left:95,right:150,bottom:300,minHeight:150,display:'flex',justifyContent:'center',alignItems:'center'}}><div style={{background:'#202842',borderRadius:22,padding:'20px 26px',color:'#fff',fontSize:50,fontWeight:800,lineHeight:1.17,textAlign:'center'}}>{chunks[n].map((w,i)=><span key={i} style={{marginRight:9,color:i===chunks[n].length-1?'#ffc56c':'white'}}>{w}</span>)}</div></div>}
-function Main(){const f=useCurrentFrame(),s=scenes.find(x=>f>=x.start&&f<x.start+x.duration)||scenes[scenes.length-1],t=(f-s.start)/FPS,cue=s.cues.find(c=>t>=c.start&&t<c.end),ix=scenes.indexOf(s),prev=ix>0?scenes[ix-1]:null,blend=prev?ease(f,s.start,s.start+18):1,bg=interpolateColors(f,scenes.map(x=>x.start),['#fff1e2','#f1eafa','#e6f4eb','#fff1db','#e8eefb','#eef6ed','#fff0e5']);return <AbsoluteFill style={{background:bg,color:C.ink,fontFamily:'Arial, sans-serif',overflow:'hidden'}}><div style={{position:'absolute',top:190,left:105,fontSize:25,fontWeight:900,letterSpacing:4,color:'#28756b'}}>THE AI SIDE</div><div style={{position:'absolute',top:250,left:105,right:165,fontSize:58,fontWeight:900,lineHeight:1.05}}>SPEC-DRIVEN DEVELOPMENT</div><svg style={{position:'absolute',left:100,top:430}} width="880" height="760" viewBox="0 0 880 760"><defs><clipPath id="wipe"><circle cx="440" cy="345" r={blend*1020}/></clipPath></defs>{prev?.kind==='spec'&&s.kind==='example'&&blend<1?<g><g opacity={1-ease(f,s.start,s.start+8)}><Scene sc={prev} t={(f-prev.start)/FPS} hideCast/></g><g opacity={ease(f,s.start+8,s.start+18)}><Scene sc={s} t={t} hideCast/></g><path d="M45 692H835" stroke="#a7b6b1" strokeWidth="6" strokeLinecap="round"/><Person x={100} y={690} s={.75} t={t} arm="point"/><Robot x={780} y={690} s={.76} t={t}/></g>:<g>{prev&&blend<1&&<Scene sc={prev} t={(f-prev.start)/FPS}/>}<g clipPath="url(#wipe)"><rect x="0" y="0" width="880" height="760" fill={bg}/><Scene sc={s} t={t}/></g></g>}</svg><Caption cue={cue} time={t}/><Audio src={staticFile('spec-short/narration.wav')}/></AbsoluteFill>}
+function Caption({cue,t}){
+ if(!cue)return null;
+ const words=cue.text.split(/\s+/),chunks=[];for(let i=0;i<words.length;i+=5)chunks.push(words.slice(i,i+5));
+ const p=Math.max(0,Math.min(.999,(t-cue.start)/Math.max(.1,cue.end-cue.start))),idx=Math.min(chunks.length-1,Math.floor(p*chunks.length));
+ const local=p*chunks.length-idx, active=Math.min(chunks[idx].length-1,Math.floor(local*chunks[idx].length));
+ return <div style={{position:'absolute',top:238,left:105,right:105,height:185,display:'flex',alignItems:'center',justifyContent:'center',textAlign:'center',fontSize:65,lineHeight:1.19,fontWeight:800,letterSpacing:-1.6}}><div>{chunks[idx].map((w,i)=><span key={i} style={{display:'inline',marginRight:14,color:i===active?C.mint:i<active?C.white:'#8C9194'}}>{w}</span>)}</div></div>
+}
+function Main(){
+ const f=useCurrentFrame(),s=scenes.find(x=>f>=x.start&&f<x.start+x.duration)||scenes[scenes.length-1],t=(f-s.start)/FPS,cue=s.cues.find(c=>t>=c.start&&t<c.end),index=scenes.indexOf(s),prev=index>0?scenes[index-1]:null;
+ const fadeIn=prev?ease(f,s.start+8,s.start+20):1,fadeOut=prev?1-ease(f,s.start,s.start+8):0;
+ return <AbsoluteFill style={{background:'#101316',overflow:'hidden',fontFamily:'Arial,sans-serif',color:C.white}}>
+  <AbsoluteFill style={{background:'radial-gradient(ellipse at 30% 37%, #25352e 0%, #171c1c 38%, #101316 75%)'}}/>
+  <AbsoluteFill style={{opacity:.15,backgroundImage:'linear-gradient(#738078 1px, transparent 1px), linear-gradient(90deg,#738078 1px,transparent 1px)',backgroundSize:'84px 84px'}}/>
+  <div style={{position:'absolute',top:115,left:112,fontSize:25,fontWeight:900,letterSpacing:4,color:C.mint}}>THE AI SIDE</div>
+  <div style={{position:'absolute',top:163,left:112,right:112,height:2,background:'#4A5A51',opacity:.7}}/>
+  <Caption cue={cue} t={t}/>
+  <svg style={{position:'absolute',left:80,top:475}} width="920" height="910" viewBox="0 0 920 910">
+   {prev&&fadeOut>0&&<g opacity={fadeOut}><Scene sc={prev} t={(f-prev.start)/FPS}/></g>}
+   <g opacity={fadeIn}><Scene sc={s} t={t}/></g>
+  </svg>
+  <div style={{position:'absolute',left:112,right:155,bottom:214,display:'flex',alignItems:'center',gap:14,fontSize:23,color:'#88928C',fontWeight:700,letterSpacing:2}}><span style={{width:10,height:10,borderRadius:'50%',background:C.mint,display:'inline-block'}}/>SPEC-DRIVEN DEVELOPMENT</div>
+  <Audio src={staticFile('spec-short/narration.wav')}/>
+ </AbsoluteFill>
+}
 registerRoot(()=> <Composition id="SpecShort" component={Main} width={1080} height={1920} fps={FPS} durationInFrames={TOTAL}/>);
-
