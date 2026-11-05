@@ -78,7 +78,7 @@ function Scene({sc,t}){
    <T x={440} y={88} size={32}>THE BOOKING RULE</T>
    <R x={285} y={120} w={310} h={280} rx={22} fill="#fffdfa" sw={6}/><rect x="287" y="122" width="306" height="65" rx="19" fill="#ded8f3"/>
    <T x={440} y={165} size={27}>10:00 AM</T>
-   <g opacity={1-booked}><T x={440} y={270} size={37} fill={C.mint}>AVAILABLE</T><path d="M365 336l30 30 55-55" fill="none" stroke={C.mint} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/></g>
+   <g opacity={1-booked}><T x={440} y={270} size={37} fill={C.mint}>AVAILABLE</T><path d="M397 336l30 30 55-55" fill="none" stroke={C.mint} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/></g>
    <g opacity={booked}><T x={440} y={270} size={37} fill={C.red}>BOOKED</T><path d="M400 297l70 70 M470 297l-70 70" stroke={C.red} strokeWidth="10" strokeLinecap="round"/></g>
    <g opacity={race}><path d="M205 485H675" stroke="#b8b1cf" strokeWidth="6" strokeDasharray="10 8"/><circle cx={p1} cy="485" r="22" fill={C.purple}/><circle cx={p2} cy="485" r="22" fill={C.red}/><T x={440} y={550} size={24}>TWO REQUESTS AT ONCE?</T></g>
    <Person x={100} y={690} s={.75} t={t} arm="point"/><Robot x={780} y={690} s={.76} t={t} concern={race>.5}/>
