@@ -72,7 +72,7 @@ function Caption({cue,t}){
  const words=cue.text.split(/\s+/),chunks=[];for(let i=0;i<words.length;i+=5)chunks.push(words.slice(i,i+5));
  const p=Math.max(0,Math.min(.999,(t-cue.start)/Math.max(.1,cue.end-cue.start))),idx=Math.min(chunks.length-1,Math.floor(p*chunks.length));
  const local=p*chunks.length-idx, active=Math.min(chunks[idx].length-1,Math.floor(local*chunks[idx].length));
- return <div style={{position:'absolute',top:238,left:105,right:105,height:185,display:'flex',alignItems:'center',justifyContent:'center',textAlign:'center',fontSize:65,lineHeight:1.19,fontWeight:800,letterSpacing:-1.6}}><div style={{width:'100%',minWidth:0,overflowWrap:'break-word'}}>{chunks[idx].map((w,i)=><span key={i} style={{display:'inline',marginRight:14,color:i===active?C.mint:i<active?C.white:'#8C9194'}}>{w}</span>)}</div></div>
+ return <div style={{position:'absolute',top:238,left:105,right:105,height:185,display:'flex',alignItems:'center',justifyContent:'center',textAlign:'center',fontSize:65,lineHeight:1.19,fontWeight:800,letterSpacing:-1.6}}><div style={{width:'100%',minWidth:0,overflowWrap:'break-word'}}>{chunks[idx].map((w,i)=><span key={i} style={{display:'inline-block',whiteSpace:'nowrap',marginRight:14,color:i===active?C.mint:i<active?C.white:'#8C9194'}}>{w}</span>)}</div></div>
 }
 function Main(){
  const f=useCurrentFrame(),s=scenes.find(x=>f>=x.start&&f<x.start+x.duration)||scenes[scenes.length-1],t=(f-s.start)/FPS,cue=s.cues.find(c=>t>=c.start&&t<c.end),index=scenes.indexOf(s),prev=index>0?scenes[index-1]:null;
