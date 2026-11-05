@@ -41,7 +41,7 @@ jobs:
         run: |
           mkdir -p output/storyboard
           cd motion
-          for frame in 60 120 150 180 219 249 267 276 285 294 303 312 750; do
+          for frame in 60 120 150 180 219 249 267 276 285 294 303 312 750 2580 2610; do
             npx remotion still src/SpecShort.jsx SpecShort "../output/storyboard/$(printf '%04d' "$frame").png" --frame="$frame"
           done
       - uses: actions/upload-artifact@v4
