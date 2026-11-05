@@ -36,7 +36,7 @@ function Card({x,y,w=200,text,fill='#e2f2eb',size=23}){return <g><R x={x} y={y} 
 function Scene({sc,t}){
  const e=i=>{let c=sc.cues[Math.min(i,sc.cues.length-1)];return ease(t,c.start,c.start+.7)},p=(i,j)=>{let a=sc.cues[Math.min(i,sc.cues.length-1)].start,b=sc.cues[Math.min(j,sc.cues.length-1)].start;return ease(t,a,Math.max(a+.5,b))},k=sc.kind,wig=Math.sin(t*2)*3;
  const floor=<path d="M45 692H835" stroke="#a7b6b1" strokeWidth="6" strokeLinecap="round"/>;
- if(k==='prompt')return <g>{floor}<Frame title="NEW FEATURE"><T x={440} y={223} size={30}>BOOK AN APPOINTMENT</T><g opacity={1-e(1)}><path d="M270 275H610 M270 305H540 M270 335H575" stroke={C.purple} strokeWidth="8" strokeLinecap="round" strokeDasharray="340" strokeDashoffset={340*(1-ease(t,0,2))}/><rect x={270+250*((t*.45)%1)} y="345" width="5" height="20" fill={C.ink}/></g><g opacity={e(1)}><Card x={330} y={380} w={220} text="DONE!" fill="#d9f2e6" size={28}/></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/><g opacity={1-e(1)}><path d="M140 330 Q300 280 500 290" fill="none" stroke={C.purple} strokeWidth="5" strokeDasharray="10 10"/><circle cx={140+360*p(0,1)} cy={330-40*p(0,1)} r="11" fill={C.purple}/></g></g>;
+ if(k==='prompt')return <g>{floor}<Frame title="NEW FEATURE"><T x={440} y={223} size={30}>BOOK AN APPOINTMENT</T><g opacity={1-e(1)}><path d="M270 275H610 M270 305H540 M270 335H575" stroke={C.purple} strokeWidth="8" strokeLinecap="round" strokeDasharray="340" strokeDashoffset={340*(1-ease(t,0,2))}/><rect x={270+250*((t*.45)%1)} y="345" width="5" height="20" fill={C.ink}/></g><g opacity={e(1)}><Card x={330} y={380} w={220} text="DONE!" fill="#d9f2e6" size={28}/></g></Frame><Person x={100} y={690} s={.65} t={t} arm="point"/><Robot x={780} y={690} s={.68} t={t}/><g opacity={1-e(1)}><path d="M165 565 Q440 585 710 565" fill="none" stroke={C.purple} strokeWidth="5" strokeDasharray="10 10"/><circle cx={165+545*p(0,1)} cy={565+20*Math.sin(Math.PI*p(0,1))} r="11" fill={C.purple}/></g></g>;
  if(k==='problem'){
   const arrive=p(1,2), confirmed=e(2), react=e(3), phonesOut=e(3), travel=ease(t,sc.cues[1].start,sc.cues[1].start+1.5);
   return <g>{floor}
@@ -78,7 +78,7 @@ function Scene({sc,t}){
    <T x={440} y={88} size={32}>THE BOOKING RULE</T>
    <R x={285} y={120} w={310} h={280} rx={22} fill="#fffdfa" sw={6}/><rect x="287" y="122" width="306" height="65" rx="19" fill="#ded8f3"/>
    <T x={440} y={165} size={27}>10:00 AM</T>
-   <g opacity={1-booked}><T x={440} y={270} size={37} fill={C.mint}>AVAILABLE</T><path d="M365 310l30 30 55-65" fill="none" stroke={C.mint} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/></g>
+   <g opacity={1-booked}><T x={440} y={270} size={37} fill={C.mint}>AVAILABLE</T><path d="M365 336l30 30 55-55" fill="none" stroke={C.mint} strokeWidth="10" strokeLinecap="round" strokeLinejoin="round"/></g>
    <g opacity={booked}><T x={440} y={270} size={37} fill={C.red}>BOOKED</T><path d="M400 297l70 70 M470 297l-70 70" stroke={C.red} strokeWidth="10" strokeLinecap="round"/></g>
    <g opacity={race}><path d="M205 485H675" stroke="#b8b1cf" strokeWidth="6" strokeDasharray="10 8"/><circle cx={p1} cy="485" r="22" fill={C.purple}/><circle cx={p2} cy="485" r="22" fill={C.red}/><T x={440} y={550} size={24}>TWO REQUESTS AT ONCE?</T></g>
    <Person x={100} y={690} s={.75} t={t} arm="point"/><Robot x={780} y={690} s={.76} t={t} concern={race>.5}/>
