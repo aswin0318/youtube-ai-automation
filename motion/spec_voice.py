@@ -22,11 +22,11 @@ for idx,(kind,title,narration) in enumerate(SCENES):
  chunks=re.split(r'(?<=[.!?])\s+', narration)
  audio=[]; cues=[]; cursor=0
  for j,chunk in enumerate(chunks):
-  samples,rate=voice.create(chunk,voice='af_heart',speed=1.02 if kind!='ending' else .98,lang='en-us')
+  samples,rate=voice.create(chunk,voice='af_heart',speed=.93 if kind!='ending' else .91,lang='en-us')
   if len(samples)==0: raise RuntimeError('Empty voice segment')
   cues.append({'text':chunk,'start':cursor,'end':cursor+len(samples)/rate});audio.append(samples);cursor+=len(samples)/rate
   if j<len(chunks)-1:
-   pause=1.2 if kind=='ending' and j==len(chunks)-2 else .42
+   pause=1.2 if kind=='ending' and j==len(chunks)-2 else (.85 if kind=='problem' and chunk.strip()=='Congratulations.' else .42)
    audio.append(np.zeros(int(rate*pause),dtype=np.float32));cursor+=pause
  # Padding makes breathing room between ideas explicit.
  padding=.30;audio.append(np.zeros(int(rate*padding),dtype=np.float32));cursor+=padding
@@ -38,3 +38,4 @@ for idx,(kind,title,narration) in enumerate(SCENES):
 sf.write(out/'narration.wav',np.concatenate(joined),rate)
 Path('motion/src/spec-scenes.json').write_text(json.dumps(scenes,ensure_ascii=False,indent=2))
 print('Duration seconds:',elapsed/30,flush=True)
+
